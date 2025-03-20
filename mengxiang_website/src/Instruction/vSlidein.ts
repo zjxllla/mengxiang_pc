@@ -4,56 +4,60 @@ import type { Directive } from 'vue'
 const map = new WeakMap<HTMLElement, Animation>()
 
 // 创建IntersectionObserver实例
-const ob = new IntersectionObserver((entries: IntersectionObserverEntry[]) => {
-  for (const entry of entries) {
-    if (entry.isIntersecting) {
-      const animation = map.get(entry.target as HTMLElement)
-      if (animation) {
-        animation.play()
+const ob = new IntersectionObserver(
+  (entries: IntersectionObserverEntry[]) => {
+    for (const entry of entries) {
+      const el = entry.target as HTMLElement
+      const animation = map.get(el)
+      if (entry.isIntersecting) {
+        if (animation && animation.playState === 'paused') {
+          animation.play()
+        }
+      } else {
+        if (animation) {
+          animation.pause()
+          animation.currentTime = 0
+        }
       }
-      ob.unobserve(entry.target)
     }
-  }
-})
-
-// 判断元素是否在视口下方
-function isBlowViewport(el: HTMLElement): boolean {
-  const rect = el.getBoundingClientRect()
-  return rect.top > window.innerHeight
-}
-
-// 定义动画选项的接口
-interface AnimationOptions {
-  duration: number
-  easing: string
-  fill: FillMode
-}
+  },
+  {
+    threshold: 0.2,
+    rootMargin: '100px 0px',
+  },
+)
 
 // 导出Vue自定义指令
 const vSlidein: Directive = {
   mounted(el: HTMLElement) {
-    if (!isBlowViewport(el)) {
-      return
-    }
     // 设置初始样式
-    el.style.opacity = '0.5'
-    el.style.transform = 'translateY(100px)'
+    el.style.opacity = '0'
+    el.style.transform = 'translateY(50px)'
+    // 清理已存在的动画实例
+    if (map.has(el)) {
+      const oldAnimation = map.get(el)
+      if (oldAnimation) {
+        oldAnimation.cancel()
+        map.delete(el)
+      }
+    }
+
     const animation = el.animate(
       [
         {
-          transform: 'translateY(100px)',
-          opacity: 0.5,
+          opacity: 0,
+          transform: 'translateY(50px)',
         },
         {
-          transform: 'translateY(0)',
           opacity: 1,
+          transform: 'translateY(0)',
         },
-      ] as Keyframe[],
+      ],
       {
-        duration: 500,
-        easing: 'ease-out',
-        fill: 'forwards',
-      } as AnimationOptions,
+        duration: 800,
+        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        fill: 'both',
+      } as KeyframeAnimationOptions,
     )
     animation.pause()
     map.set(el, animation)

@@ -11,7 +11,7 @@ onMounted(() => {
       const part1Height = document.getElementById('part1')?.offsetHeight || 0
       const part2Height = document.getElementById('part2')?.offsetHeight || 0
 
-      if (scrollPosition > part1Height / 5 && scrollPosition < (part1Height + part2Height) / 2 && scrollPosition > last_scroll.value) {
+      if (scrollPosition > part1Height / 10 && scrollPosition < (part1Height + part2Height) / 2 && scrollPosition > last_scroll.value) {
         container.scrollTo({ top: part1Height, behavior: 'smooth' })
         last_scroll.value = scrollPosition
         console.log('一切二', last_scroll.value)
@@ -19,11 +19,11 @@ onMounted(() => {
         container.scrollTo({ top: 0, behavior: 'smooth' })
         last_scroll.value = scrollPosition
         console.log('二切一', last_scroll.value)
-      } else if (scrollPosition > part1Height + part2Height / 5 && scrollPosition < part1Height + part2Height && scrollPosition > last_scroll.value) {
+      } else if (scrollPosition > part1Height + part2Height / 10 && scrollPosition < part1Height + part2Height && scrollPosition > last_scroll.value) {
         container.scrollTo({ top: part1Height + part2Height, behavior: 'smooth' })
         last_scroll.value = scrollPosition
         console.log('二切三', last_scroll.value)
-      } else if (scrollPosition < part1Height + 4 * (part2Height / 5) && scrollPosition < last_scroll.value) {
+      } else if (scrollPosition < part1Height + 9.9 * (part2Height / 10) && scrollPosition < last_scroll.value) {
         container.scrollTo({ top: part1Height, behavior: 'smooth' })
         last_scroll.value = scrollPosition
         console.log('三切二', last_scroll.value)
@@ -35,7 +35,8 @@ onMounted(() => {
 
 <template>
   <div class="container">
-    <div class="enum"><a href="/enum">菜单</a></div>
+    <img src="../../assets/icon.png" alt="菜单" title="菜单" class="enum">
+    <div class="enum_text">点我，前往菜单!</div>
     <el-row>
       <el-col :span="24">
         <div ref="containerRef" style="height: 100vh; overflow-y: auto;"> <!-- 确保容器可以垂直滚动 -->
@@ -95,9 +96,28 @@ onMounted(() => {
   position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 333;
+  width: 60px;
+  z-index: 2;
 }
 
+.enum_text {
+  position: fixed;
+  z-index: 3;
+  width: 140px;
+  top: 65px;
+  right: 55px;
+  border: 1px solid white;
+  border-radius: 10px 0 12px 10px;
+  color: black;
+  background-color: white;
+  text-align: center;
+}
+.hide {
+  opacity: 0;
+}
+.block {
+  display: block;
+}
 a {
   color: white;
 }
@@ -188,5 +208,10 @@ a {
 .pictures {
   width: 70vw;
   margin-top: 50px;
+}
+
+.el-anchor {
+  --el-anchor-active-color: yellow;
+  --el-anchor-marker-bg-color: yellow;
 }
 </style>
