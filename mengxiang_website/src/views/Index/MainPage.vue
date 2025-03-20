@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import router from '../../router/index'
 
 const containerRef = ref<HTMLElement | null>(null)
 const last_scroll = ref<number>(0)
+let num = 0
 onMounted(() => {
   const container = containerRef.value
+  const enum_text = document.querySelector('.enum_text')
   if (container) {
     container.addEventListener('scroll', () => {
       const scrollPosition = container.scrollTop
@@ -13,6 +16,11 @@ onMounted(() => {
       const part1 = document.getElementById('part1')
       const part2 = document.getElementById('part2')
       const part3 = document.getElementById('part3')
+      if (num === 0) {
+        part2?.classList.add('hide')
+        part3?.classList.add('hide')
+        num++
+      }
 
       if (scrollPosition > part1Height / 10 && scrollPosition < (part1Height + part2Height) / 2 && scrollPosition > last_scroll.value) {
         container.scrollTo({ top: part1Height, behavior: 'smooth' })
@@ -43,17 +51,25 @@ onMounted(() => {
         part1?.classList.remove('slide_in', 'slide_out')
         part2?.classList.remove('slide_out')
         part2?.classList.add('slide_in')
+        part3?.classList.remove('slide_in')
         part3?.classList.add('slide_out')
       }
     })
   }
+
+  setTimeout(() => {
+    enum_text?.classList.add('hide')
+  }, 3000)
 })
+function to_enum() {
+  router.push('/enum')
+}
 </script>
 
 <template>
   <div class="container">
-    <img src="../../assets/icon.png" alt="菜单" title="菜单" class="enum">
-    <div class="enum_text">点我，前往菜单!</div>
+    <img src="../../assets/icon.png" alt="菜单" title="菜单" class="enum" @click="to_enum">
+    <div class="enum_text">点我试试!</div>
     <el-row>
       <el-col :span="24">
         <div ref="containerRef" style="height: 100vh; overflow-y: auto;"> <!-- 确保容器可以垂直滚动 -->
@@ -125,14 +141,16 @@ onMounted(() => {
 .enum_text {
   position: fixed;
   z-index: 3;
-  width: 140px;
+  width: 120px;
   top: 65px;
   right: 55px;
+  font-weight: 700;
   border: 1px solid white;
   border-radius: 10px 0 12px 10px;
   color: black;
   background-color: white;
   text-align: center;
+  transition: all 0.5s;
 }
 
 .slide_in {
@@ -141,6 +159,10 @@ onMounted(() => {
 
 .slide_out {
   animation: slideOut 0.5s ease-in-out forwards;
+}
+
+.hide {
+  opacity: 0;
 }
 
 @keyframes slideIn {
