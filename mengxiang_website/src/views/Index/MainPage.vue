@@ -10,23 +10,40 @@ onMounted(() => {
       const scrollPosition = container.scrollTop
       const part1Height = document.getElementById('part1')?.offsetHeight || 0
       const part2Height = document.getElementById('part2')?.offsetHeight || 0
+      const part1 = document.getElementById('part1')
+      const part2 = document.getElementById('part2')
+      const part3 = document.getElementById('part3')
 
       if (scrollPosition > part1Height / 10 && scrollPosition < (part1Height + part2Height) / 2 && scrollPosition > last_scroll.value) {
         container.scrollTo({ top: part1Height, behavior: 'smooth' })
         last_scroll.value = scrollPosition
-        console.log('一切二', last_scroll.value)
-      } else if (scrollPosition < 9.9 * (part1Height / 10) && scrollPosition < last_scroll.value) {
+        part1?.classList.add('slide_out')
+        part2?.classList.remove('slide_out')
+        part2?.classList.add('slide_in')
+        part3?.classList.remove('slide_out', 'slide_in')
+      } else if (scrollPosition < 9.99 * (part1Height / 10) && scrollPosition < last_scroll.value) {
         container.scrollTo({ top: 0, behavior: 'smooth' })
         last_scroll.value = scrollPosition
-        console.log('二切一', last_scroll.value)
+        part1?.classList.remove('slide_out')
+        part1?.classList.add('slide_in')
+        part2?.classList.remove('slide_in')
+        part2?.classList.add('slide_out')
+        part3?.classList.remove('slide_out', 'slide_in')
       } else if (scrollPosition > part1Height + part2Height / 10 && scrollPosition < part1Height + part2Height && scrollPosition > last_scroll.value) {
         container.scrollTo({ top: part1Height + part2Height, behavior: 'smooth' })
         last_scroll.value = scrollPosition
-        console.log('二切三', last_scroll.value)
+        part1?.classList.remove('slide_in', 'slide_out')
+        part2?.classList.remove('slide_in')
+        part2?.classList.add('slide_out')
+        part3?.classList.remove('slide_out')
+        part3?.classList.add('slide_in')
       } else if (scrollPosition < part1Height + 9.9 * (part2Height / 10) && scrollPosition < last_scroll.value) {
         container.scrollTo({ top: part1Height, behavior: 'smooth' })
         last_scroll.value = scrollPosition
-        console.log('三切二', last_scroll.value)
+        part1?.classList.remove('slide_in', 'slide_out')
+        part2?.classList.remove('slide_out')
+        part2?.classList.add('slide_in')
+        part3?.classList.add('slide_out')
       }
     })
   }
@@ -40,23 +57,28 @@ onMounted(() => {
     <el-row>
       <el-col :span="24">
         <div ref="containerRef" style="height: 100vh; overflow-y: auto;"> <!-- 确保容器可以垂直滚动 -->
-          <div id="part1" style="height:100vh;" v-slidein> <!-- 确保每个部分的高度不超过视口 -->
+          <div id="part1" style="height:100vh;"> <!-- 确保每个部分的高度不超过视口 -->
             <div class="title_bgc">
               <h1 class="title">梦翔工作室</h1>
             </div>
           </div>
-          <div id="part2" style="height:100vh;" v-slidein> <!-- 确保每个部分的高度不超过视口 -->
+          <div id="part2" style="height:100vh;"> <!-- 确保每个部分的高度不超过视口 -->
             <div class="about_us">
               <div class="context">
                 <div class="section_title">关于我们</div>
                 <div class="line"></div>
                 <div class="content">
-                  梦翔工作室成立于2007年，至今已经历了13年的成长。社团一直秉承“自强不息”的理念，不断提高，努力创新。梦翔社团自成立以来，紧跟软件发展方向，及时转变学习方向，让走出去的学生都能很快找到适合的就业岗位。梦翔社团有博学强识的带队老师，有认真负责的学长学姐，在这里你可以体会到家一般的温馨和睦。社团还拥有严格的管理制度，毕竟无规矩不成方圆，有制度的约束才可以让我们更好的成长；社团紧跟市场的要求技术，确立了人工智能，前端，小程序，嵌入式等系统学习研究的发展方向，现已成为web应用方向主力社团之一。梦翔人自强不息，先后承接并完成项目三十余项，并在各种比赛中赢得了诸多荣誉。我们的脚步从未停息...
+                  梦翔工作室成立于2007年，至今已经历了13年的成长。社团一直秉承“自强不息”的理念，不断提高，努力创新。
+                  梦翔社团自成立以来，紧跟软件发展方向，及时转变学习方向，让走出去的学生都能很快找到适合的就业岗位。
+                  梦翔社团有博学强识的带队老师，有认真负责的学长学姐，在这里你可以体会到家一般的温馨和睦。
+                  社团还拥有严格的管理制度，毕竟无规矩不成方圆，有制度的约束才可以让我们更好的成长；
+                  社团紧跟市场的要求技术，确立了人工智能，前端，小程序，嵌入式等系统学习研究的发展方向，现已成为web应用方向主力社团之一。
+                  梦翔人自强不息，先后承接并完成项目三十余项，并在各种比赛中赢得了诸多荣誉。我们的脚步从未停息...
                 </div>
               </div>
             </div>
           </div>
-          <div id="part3" style="height:100vh;" v-slidein> <!-- 确保每个部分的高度不超过视口 -->
+          <div id="part3" style="height:100vh;"> <!-- 确保每个部分的高度不超过视口 -->
             <div class="award">
               <div class="context">
                 <div class="section_title">奖项展示</div>
@@ -112,12 +134,47 @@ onMounted(() => {
   background-color: white;
   text-align: center;
 }
+
+.slide_in {
+  animation: slideIn 0.5s ease-in-out forwards;
+}
+
+.slide_out {
+  animation: slideOut 0.5s ease-in-out forwards;
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+}
+
 .hide {
   opacity: 0;
 }
+
 .block {
   display: block;
 }
+
 a {
   color: white;
 }
