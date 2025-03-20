@@ -35,6 +35,7 @@ onMounted(() => {
 
 <template>
   <div class="container">
+    <div class="enum"><a href="/enum">菜单</a></div>
     <el-row>
       <el-col :span="24">
         <div ref="containerRef" style="height: 100vh; overflow-y: auto;"> <!-- 确保容器可以垂直滚动 -->
@@ -88,6 +89,17 @@ onMounted(() => {
   color: white;
   height: 100vh;
   overflow: hidden;
+}
+
+.enum {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 333;
+}
+
+a {
+  color: white;
 }
 
 .title_bgc {

@@ -4,6 +4,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/login', component: () => import('@/views/Login/LoginPage.vue') },
+    {path:'/enum',component:()=>import('@/views/layout/enumPage.vue')},
     {
       path: '/',
       component: () => import('@/views/layout/layoutCountainer.vue'),
