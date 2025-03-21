@@ -1,91 +1,78 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import router from '../../router/index'
-import throttle from 'lodash.throttle'
 
 const containerRef = ref<HTMLElement | null>(null)
-const last_scroll = ref<number>(0)
-let num = 0
+const currentIndex = ref(0)
+const sections = ['#part1', '#part2', '#part3']
+let isScrolling = false
+let ifShow = ref(false)
+
+// 使用import方式导入图片资源
+import carouselImage1 from '../../assets/lk.jpg'
+const pictures = [carouselImage1, carouselImage1, carouselImage1, carouselImage1]
+
+const handleScroll = (e: WheelEvent) => {
+  e.preventDefault()
+  if (isScrolling) return
+  const delta = e.deltaY > 0 ? 1 : -1
+  const newIndex = Math.min(Math.max(currentIndex.value + delta, 0), sections.length - 1)
+  const target = document.querySelector(sections[newIndex])
+  if (newIndex !== currentIndex.value) {
+    isScrolling = true
+    currentIndex.value = newIndex
+   
+    target?.scrollIntoView({ behavior: 'smooth' })
+    setTimeout(() => {
+      isScrolling = false
+    }, 1000)
+  }
+  target?.addEventListener('resize', () => {
+  })
+}
+
 
 
 onMounted(() => {
-  const container = containerRef.value
-  const enum_text = document.querySelector('.enum_text')
-  if (container) {
-    // 使用throttle函数包装滚动事件处理函数，限制200ms内只触发一次
-    const handleScroll = throttle(() => {
-      const scrollPosition = container.scrollTop
-      const part1Height = document.getElementById('part1')?.offsetHeight || 0
-      const part2Height = document.getElementById('part2')?.offsetHeight || 0
-      const part1 = document.getElementById('part1')
-      const part2 = document.getElementById('part2')
-      const part3 = document.getElementById('part3')
-      if (num === 0) {
-        part2?.classList.add('hide')
-        part3?.classList.add('hide')
-        num++
-      }
-
-      if (scrollPosition > part1Height / 10 && scrollPosition < (part1Height + part2Height) / 2 && scrollPosition > last_scroll.value) {
-        container.scrollTo({ top: part1Height, behavior: 'smooth' })
-        last_scroll.value = scrollPosition
-        part1?.classList.add('slide_out')
-        part2?.classList.remove('slide_out')
-        part2?.classList.add('slide_in')
-        part3?.classList.remove('slide_out', 'slide_in')
-      } else if (scrollPosition < 9.99 * (part1Height / 10) && scrollPosition < last_scroll.value) {
-        container.scrollTo({ top: 0, behavior: 'smooth' })
-        last_scroll.value = scrollPosition
-        part1?.classList.remove('slide_out')
-        part1?.classList.add('slide_in')
-        part2?.classList.remove('slide_in')
-        part2?.classList.add('slide_out')
-        part3?.classList.remove('slide_out', 'slide_in')
-      } else if (scrollPosition > part1Height + part2Height / 10 && scrollPosition < part1Height + part2Height && scrollPosition > last_scroll.value) {
-        container.scrollTo({ top: part1Height + part2Height, behavior: 'smooth' })
-        last_scroll.value = scrollPosition
-        part1?.classList.remove('slide_in', 'slide_out')
-        part2?.classList.remove('slide_in')
-        part2?.classList.add('slide_out')
-        part3?.classList.remove('slide_out')
-        part3?.classList.add('slide_in')
-      } else if (scrollPosition < part1Height + 9.9 * (part2Height / 10) && scrollPosition < last_scroll.value) {
-        container.scrollTo({ top: part1Height, behavior: 'smooth' })
-        last_scroll.value = scrollPosition
-        part1?.classList.remove('slide_in', 'slide_out')
-        part2?.classList.remove('slide_out')
-        part2?.classList.add('slide_in')
-        part3?.classList.remove('slide_in')
-        part3?.classList.add('slide_out')
-      }
-    }, 10) // 设置节流时间
-
-    // 添加滚动事件监听
-    container.addEventListener('scroll', handleScroll)
-  }
-
+  containerRef.value?.addEventListener('wheel', handleScroll)
   setTimeout(() => {
-    enum_text?.classList.add('hide')
-  }, 3000)
+    ifShow.value = true
+  }, 2000)
 })
-function to_enum() {
+
+const to_enum = () => {
   router.push('/enum')
 }
 </script>
 
 <template>
   <div class="container">
-    <img src="../../assets/icon.png" alt="菜单" class="enum" @click="to_enum">
-    <div class="enum_text">点我试试!</div>
+    <img src="../../assets/icon.png" alt="菜单" class="enum" @click="to_enum" />
+    <Transition>
+      <div class="enum_text" v-if="ifShow">点我试试!</div>
+    </Transition>
     <el-row>
       <el-col :span="24">
-        <div ref="containerRef" style="height: 100vh; overflow-y: auto;"> <!-- 确保容器可以垂直滚动 -->
-          <div id="part1" style="height:100vh;"> <!-- 确保每个部分的高度不超过视口 -->
+        <div ref="containerRef" style="height: 100vh; overflow-y: auto">
+          <!-- 确保容器可以垂直滚动 -->
+          <div
+            id="part1"
+            class="scroll-section"
+            :class="{ active: currentIndex === 0 }"
+            style="height: 100vh"
+          >
+            <!-- 确保每个部分的高度不超过视口 -->
             <div class="title_bgc">
               <h1 class="title">梦翔工作室</h1>
             </div>
           </div>
-          <div id="part2" style="height:100vh;"> <!-- 确保每个部分的高度不超过视口 -->
+          <div
+            id="part2"
+            class="scroll-section"
+            :class="{ active: currentIndex === 1 }"
+            style="height: 100vh"
+          >
+            <!-- 确保每个部分的高度不超过视口 -->
             <div class="about_us">
               <div class="context">
                 <div class="section_title">关于我们</div>
@@ -101,15 +88,24 @@ function to_enum() {
               </div>
             </div>
           </div>
-          <div id="part3" style="height:100vh;"> <!-- 确保每个部分的高度不超过视口 -->
+          <div
+            id="part3"
+            class="scroll-section"
+            :class="{ active: currentIndex === 2 }"
+            style="height: 100vh"
+          >
+            <!-- 确保每个部分的高度不超过视口 -->
             <div class="award">
               <div class="context">
                 <div class="section_title">奖项展示</div>
                 <div class="line"></div>
-                <div class="content" style="display: flex; justify-content: center; align-items: center; height: 100%;">
-                  <el-carousel :interval="4000" type="card" height="60vh" class="pictures">
-                    <el-carousel-item v-for="item in 6" :key="item">
-                      <h3 text="3xl" justify="center">{{ item }}</h3>
+                <div
+                  class="content"
+                  style="display: flex; justify-content: center; align-items: center; height: 100%"
+                >
+                  <el-carousel :interval="4000" type="card" height="50vh" class="pictures">
+                    <el-carousel-item v-for="item in pictures" :key="item">
+                      <img :src="item" alt="图片" style="width: 100%; height: 100%" />
                     </el-carousel-item>
                   </el-carousel>
                 </div>
@@ -118,9 +114,18 @@ function to_enum() {
           </div>
         </div>
       </el-col>
-      <el-col :span="6" style="position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 1000;">
-        <el-anchor :container="containerRef" direction="vertical" type="default" :offset="0"
-          style="background: transparent; padding: 0; border-radius: 0;">
+      <el-col
+        :span="6"
+        style="position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 1000"
+      >
+        <el-anchor
+          :container="containerRef"
+          direction="vertical"
+          type="default"
+          :offset="0"
+          style="background: transparent; padding: 0; border-radius: 0"
+          @click.prevent=""
+        >
           <el-anchor-link href="#part1" title="首页" />
           <el-anchor-link href="#part2" title="介绍" />
           <el-anchor-link href="#part3" title="奖项" />
@@ -157,51 +162,40 @@ function to_enum() {
   color: black;
   background-color: white;
   text-align: center;
-  transition: all 0.5s;
-}
-
-.slide_in {
-  animation: slideIn 0.5s ease-in-out forwards;
-}
-
-.slide_out {
-  animation: slideOut 0.5s ease-in-out forwards;
-}
-
-.hide {
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(1);
   opacity: 0;
 }
 
-@keyframes slideIn {
-  0% {
-    opacity: 0;
-    transform: translateY(50px);
-  }
+.enum_text {
+  /* 原有样式保持不变 */
+  animation: pulse 2s ease-in-out infinite;
+}
 
-  100% {
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
     opacity: 1;
-    transform: translateY(0);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
   }
 }
 
-@keyframes slideOut {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateY(50px);
-  }
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
 }
 
-.hide {
+/* 移除原有的:hover样式 */
+.v-enter-from,
+.v-leave-to {
   opacity: 0;
-}
-
-.block {
-  display: block;
 }
 
 a {
@@ -299,5 +293,20 @@ a {
 .el-anchor {
   --el-anchor-active-color: yellow;
   --el-anchor-marker-bg-color: yellow;
+  pointer-events: none;
+}
+
+.el-anchor-link__title {
+  color: #999 !important;
+  cursor: not-allowed;
+}
+
+.scroll-section {
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.scroll-section.active {
+  opacity: 1;
 }
 </style>
