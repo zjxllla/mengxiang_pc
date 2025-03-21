@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import router from '../../router/index'
+import throttle from 'lodash.throttle'
 
 const containerRef = ref<HTMLElement | null>(null)
 const last_scroll = ref<number>(0)
 let num = 0
+
+
 onMounted(() => {
   const container = containerRef.value
   const enum_text = document.querySelector('.enum_text')
   if (container) {
-    container.addEventListener('scroll', () => {
+    // 使用throttle函数包装滚动事件处理函数，限制200ms内只触发一次
+    const handleScroll = throttle(() => {
       const scrollPosition = container.scrollTop
       const part1Height = document.getElementById('part1')?.offsetHeight || 0
       const part2Height = document.getElementById('part2')?.offsetHeight || 0
@@ -54,7 +58,10 @@ onMounted(() => {
         part3?.classList.remove('slide_in')
         part3?.classList.add('slide_out')
       }
-    })
+    }, 5) // 设置节流时间
+
+    // 添加滚动事件监听
+    container.addEventListener('scroll', handleScroll)
   }
 
   setTimeout(() => {
@@ -68,7 +75,7 @@ function to_enum() {
 
 <template>
   <div class="container">
-    <img src="../../assets/icon.png" alt="菜单" title="菜单" class="enum" @click="to_enum">
+    <img src="../../assets/icon.png" alt="菜单" class="enum" @click="to_enum">
     <div class="enum_text">点我试试!</div>
     <el-row>
       <el-col :span="24">
