@@ -4,7 +4,6 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/login', component: () => import('@/views/Login/LoginPage.vue') },
-    {path:'/enum',component:()=>import('@/views/layout/enumPage.vue')},
     {
       path: '/',
       component: () => import('@/views/layout/layoutCountainer.vue'),
@@ -17,6 +16,7 @@ const router = createRouter({
     },
     { path: '/resource', component: () => import('@/views/Resource/ResourcePage.vue') },
     { path: '/blog', component: () => import('@/views/Blog/BlogPage.vue') },
+    { path: '/enum', component: () => import('@/views/layout/enumPage.vue') },
   ],
 })
 

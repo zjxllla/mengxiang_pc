@@ -3,35 +3,42 @@ import { ref, onMounted } from 'vue'
 import router from '../../router/index'
 
 const containerRef = ref<HTMLElement | null>(null)
-const currentIndex = ref(0)
+const currentIndex = ref([0])
 const sections = ['#part1', '#part2', '#part3']
+const delta = ref(0)
 let isScrolling = false
-let ifShow = ref(false)
-
-// 使用import方式导入图片资源
-import carouselImage1 from '../../assets/lk.jpg'
-const pictures = [carouselImage1, carouselImage1, carouselImage1, carouselImage1]
+const ifShow = ref(false)
 
 const handleScroll = (e: WheelEvent) => {
   e.preventDefault()
   if (isScrolling) return
-  const delta = e.deltaY > 0 ? 1 : -1
-  const newIndex = Math.min(Math.max(currentIndex.value + delta, 0), sections.length - 1)
+  delta.value = e.deltaY > 0 ? 1 : -1
+  const newIndex = Math.min(Math.max(currentIndex.value[0] + delta.value, 0), sections.length - 1)
   const target = document.querySelector(sections[newIndex])
-  if (newIndex !== currentIndex.value) {
+  if (newIndex !== currentIndex.value[0]) {
     isScrolling = true
-    currentIndex.value = newIndex
-   
+    currentIndex.value[0] = newIndex
     target?.scrollIntoView({ behavior: 'smooth' })
     setTimeout(() => {
       isScrolling = false
-    }, 1000)
+    }, 500)
   }
-  target?.addEventListener('resize', () => {
-  })
 }
-
-
+window.addEventListener('resize', () => {
+  const midArr = []
+  if (delta.value > 0 && currentIndex.value[0] < 2 || delta.value < 0 && currentIndex.value[0] === 2 || delta.value < 0 && currentIndex.value[0] === 1) {
+    midArr.push(currentIndex.value[0])
+    midArr.push(currentIndex.value[0] + 1)
+    currentIndex.value = []
+    currentIndex.value = midArr
+  } else if (delta.value > 0 && currentIndex.value[0] === 2 || delta.value < 0 && currentIndex.value[0] > 0) {
+    midArr.push(currentIndex.value[0])
+    midArr.push(currentIndex.value[0] - 1)
+    currentIndex.value = []
+    currentIndex.value = midArr
+  }
+  console.log(currentIndex.value)
+})
 
 onMounted(() => {
   containerRef.value?.addEventListener('wheel', handleScroll)
@@ -55,23 +62,13 @@ const to_enum = () => {
       <el-col :span="24">
         <div ref="containerRef" style="height: 100vh; overflow-y: auto">
           <!-- 确保容器可以垂直滚动 -->
-          <div
-            id="part1"
-            class="scroll-section"
-            :class="{ active: currentIndex === 0 }"
-            style="height: 100vh"
-          >
+          <div id="part1" class="scroll-section" :class="{ active: currentIndex.includes(0) }" style="height: 100vh">
             <!-- 确保每个部分的高度不超过视口 -->
             <div class="title_bgc">
               <h1 class="title">梦翔工作室</h1>
             </div>
           </div>
-          <div
-            id="part2"
-            class="scroll-section"
-            :class="{ active: currentIndex === 1 }"
-            style="height: 100vh"
-          >
+          <div id="part2" class="scroll-section" :class="{ active: currentIndex.includes(1) }" style="height: 100vh">
             <!-- 确保每个部分的高度不超过视口 -->
             <div class="about_us">
               <div class="context">
@@ -88,24 +85,16 @@ const to_enum = () => {
               </div>
             </div>
           </div>
-          <div
-            id="part3"
-            class="scroll-section"
-            :class="{ active: currentIndex === 2 }"
-            style="height: 100vh"
-          >
+          <div id="part3" class="scroll-section" :class="{ active: currentIndex.includes(2) }" style="height: 100vh">
             <!-- 确保每个部分的高度不超过视口 -->
             <div class="award">
               <div class="context">
                 <div class="section_title">奖项展示</div>
                 <div class="line"></div>
-                <div
-                  class="content"
-                  style="display: flex; justify-content: center; align-items: center; height: 100%"
-                >
+                <div class="content" style="display: flex; justify-content: center; align-items: center; height: 100%">
                   <el-carousel :interval="4000" type="card" height="50vh" class="pictures">
-                    <el-carousel-item v-for="item in pictures" :key="item">
-                      <img :src="item" alt="图片" style="width: 100%; height: 100%" />
+                    <el-carousel-item v-for="item in 6" :key="item">
+                      <img src='../../assets/lk.jpg' alt="图片" style="width: 100%; height: 100%" />
                     </el-carousel-item>
                   </el-carousel>
                 </div>
@@ -114,18 +103,9 @@ const to_enum = () => {
           </div>
         </div>
       </el-col>
-      <el-col
-        :span="6"
-        style="position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 1000"
-      >
-        <el-anchor
-          :container="containerRef"
-          direction="vertical"
-          type="default"
-          :offset="0"
-          style="background: transparent; padding: 0; border-radius: 0"
-          @click.prevent=""
-        >
+      <el-col :span="6" style="position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 1000">
+        <el-anchor :container="containerRef" direction="vertical" type="default" :offset="0"
+          style="background: transparent; padding: 0; border-radius: 0" @click.prevent="">
           <el-anchor-link href="#part1" title="首页" />
           <el-anchor-link href="#part2" title="介绍" />
           <el-anchor-link href="#part3" title="奖项" />
@@ -177,10 +157,12 @@ const to_enum = () => {
     transform: scale(1);
     opacity: 0;
   }
+
   50% {
     transform: scale(1.15);
     opacity: 1;
   }
+
   100% {
     transform: scale(1);
     opacity: 0;
@@ -274,7 +256,8 @@ a {
   background: url('../../assets/main_pic3.jpg') no-repeat center;
 }
 
-.about_us::before {
+.about_us::before,
+.award::before {
   content: '';
   position: absolute;
   top: 0;
