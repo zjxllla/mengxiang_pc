@@ -58,7 +58,7 @@ onMounted(() => {
         part3?.classList.remove('slide_in')
         part3?.classList.add('slide_out')
       }
-    }, 5) // 设置节流时间
+    }, 10) // 设置节流时间
 
     // 添加滚动事件监听
     container.addEventListener('scroll', handleScroll)
