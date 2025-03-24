@@ -10,6 +10,7 @@ const ifShow = ref(false)
 const isMobile = ref(false)
 let touchStartY = 0
 let touchEndY = 0
+const container_over = ref(false)
 
 // 检测是否为移动设备
 const checkMobile = () => {
@@ -112,6 +113,7 @@ onMounted(() => {
   setTimeout(() => {
     ifShow.value = true
   }, 2000)
+  container_over.value = true
 })
 
 onUnmounted(() => {
@@ -257,7 +259,7 @@ const mouseleave_link = (num: number) => {
 
   <!-- 菜单 -->
   <Transition name="fade-slide-menu">
-    <div class="enum_bgc" v-show="showMenu">
+    <div class="enum_bgc" v-show="showMenu" v-if="container_over">
       <el-row>
         <el-col :xs="24" :sm="12" :md="6" class="enum_title">
           <img src="../../assets/icon.png"
@@ -541,7 +543,7 @@ a {
 }
 
 .title_name {
-  font-size: 36px;
+  font-size: clamp(20px, 2.2vw, 50px);
   margin-left: 20px;
   font-weight: 700;
 }
@@ -658,8 +660,7 @@ a {
 
 .link_row a {
   text-align: center;
-  padding: 20px;
-  font-size: 28px;
+  font-size: 2vw;
 }
 
 .link_row a:hover {
