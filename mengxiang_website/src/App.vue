@@ -1,13 +1,29 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import LoadingScreen from './components/LoadingScreen.vue'
+
+// 控制加载屏幕的显示
+const showLoading = ref(true)
+
+// 当资源加载完成时触发
+const handleLoaded = () => {
+  showLoading.value = false
+}
 </script>
 
 <template>
   <div class="app-container">
-    <router-view v-slot="{ Component }">
-      <transition name="fade" mode="out-in">
-        <component :is="Component" />
-      </transition>
-    </router-view>
+    <!-- 加载动画组件 -->
+    <LoadingScreen :show="showLoading" @loaded="handleLoaded" />
+    
+    <!-- 只有在加载完成后才显示主内容 -->
+    <div v-show="!showLoading">
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+    </div>
   </div>
 </template>
 

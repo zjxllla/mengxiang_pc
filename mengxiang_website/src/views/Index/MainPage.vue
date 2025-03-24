@@ -663,7 +663,7 @@ a {
 }
 
 .link_row a:hover {
-  color: aqua;
+  color: #fff300;
   font-weight: 700;
 }
 
@@ -710,7 +710,7 @@ a {
   bottom: 0;
   left: 0;
   height: 5px;
-  background-color: aqua;
+  background-color: #fff300;
 }
 
 .enum_link_line_in {
