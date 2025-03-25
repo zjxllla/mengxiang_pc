@@ -1,0 +1,38 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 4870560 */
+  src: url('iconfont.eot?t=1742900071053'); /* IE9 */
+  src: url('iconfont.eot?t=1742900071053#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1742900071053') format('woff2'),
+       url('iconfont.woff?t=1742900071053') format('woff'),
+       url('iconfont.ttf?t=1742900071053') format('truetype'),
+       url('iconfont.svg?t=1742900071053#iconfont') format('svg');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-lianxi:before {
+  content: "\e649";
+}
+
+.icon-nianji:before {
+  content: "\e610";
+}
+
+.icon-xingbie:before {
+  content: "\e813";
+}
+
+.icon-a-01:before {
+  content: "\e609";
+}
+
+.icon-mingziname:before {
+  content: "\e63f";
+}
+

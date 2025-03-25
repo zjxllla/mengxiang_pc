@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
+import LoadingScreen from '../../components/LoadingScreen.vue'
+import { useGlobalStore } from '../../stores';
 
+const globalStore = useGlobalStore()
+const back_enum = globalStore.getBackto_enum()
 const containerRef = ref<HTMLElement | null>(null)
 const currentIndex = ref([0])
 const sections = ['#part1', '#part2', '#part3']
@@ -10,7 +14,13 @@ const ifShow = ref(false)
 const isMobile = ref(false)
 let touchStartY = 0
 let touchEndY = 0
+const loading_time = ref(0)
 const container_over = ref(false)
+
+
+
+// 控制加载屏幕的显示
+const showLoading = ref(true)
 
 // 检测是否为移动设备
 const checkMobile = () => {
@@ -75,7 +85,6 @@ window.addEventListener('resize', () => {
     currentIndex.value = []
     currentIndex.value = midArr
   }
-  console.log(currentIndex.value)
 })
 
 // 添加或移除事件监听器的函数
@@ -98,6 +107,26 @@ const addEventListeners = () => {
 }
 
 onMounted(() => {
+  // 切换到菜单
+  if (back_enum) {
+    globalStore.setBackto_enum(false)
+    to_enum()
+  }
+  console.log(back_enum)
+  // 首屏的加载时间
+  const oberserver = new PerformanceObserver((list) => {
+    const entries = list.getEntries()
+    const lastEntry = entries[entries.length - 1]
+    loading_time.value = lastEntry.startTime + lastEntry.duration
+    setTimeout(() => {
+      showLoading.value = false
+    }, loading_time.value);
+  })
+  oberserver.observe({
+    type: 'largest-contentful-paint',
+    buffered: true
+  })
+
   // 检测设备类型
   checkMobile()
   window.addEventListener('resize', checkMobile)
@@ -114,6 +143,7 @@ onMounted(() => {
     ifShow.value = true
   }, 2000)
   container_over.value = true
+
 })
 
 onUnmounted(() => {
@@ -129,6 +159,8 @@ onUnmounted(() => {
     containerRef.value.removeEventListener('touchmove', handleTouchMove)
     containerRef.value.removeEventListener('touchend', handleTouchEnd)
   }
+  document.querySelector('.enum_bgc')?.classList.remove('enum_bgc_animate')
+  document.querySelector('.bear')?.classList.remove('bear_animation')
 })
 // 控制主页和菜单的显示状态
 const showContainer = ref(true)
@@ -140,6 +172,10 @@ const to_enum = () => {
   setTimeout(() => {
     showMenu.value = true
   }, 50)
+  setTimeout(() => {
+    document.querySelector('.enum_bgc')?.classList.add('enum_bgc_animate')
+    document.querySelector('.bear')?.classList.add('bear_animation')
+  }, 100)
   setTimeout(() => {
     change_pic()
   }, 1000)
@@ -156,6 +192,10 @@ const back = () => {
     showContainer.value = true
     change_pic()
   }, 50)
+  setTimeout(() => {
+    document.querySelector('.enum_bgc')?.classList.remove('enum_bgc_animate')
+    document.querySelector('.bear')?.classList.remove('bear_animation')
+  }, 100)
 };
 const move_in = () => {
   document.querySelector('.enum_line')?.classList.add('line_in')
@@ -193,7 +233,7 @@ const mouseleave_link = (num: number) => {
             <div id="part1" class="scroll-section" :class="{ active: currentIndex.includes(0) }" style="height: 100vh">
               <!-- 确保每个部分的高度不超过视口 -->
               <div class="title_bgc">
-                <h1 class="title">梦翔工作室</h1>
+                <h1 class="title" :class="{ 'mobile-container-title': isMobile }">梦翔工作室</h1>
                 <div v-if="isMobile"><img src="../../assets/bottom.png" alt="" width="30px"
                     style="position: absolute;bottom: 0;left: 45vw; "></div>
               </div>
@@ -203,8 +243,8 @@ const mouseleave_link = (num: number) => {
               <!-- 确保每个部分的高度不超过视口 -->
               <div class="about_us">
                 <div class="context">
-                  <div class="section_title">关于我们</div>
-                  <div class="line"></div>
+                  <div class="section_title" :class="{ 'mobile_second_title': isMobile }">关于我们</div>
+                  <div class="line" :class="{ 'mobile-line': isMobile }"></div>
                   <div class="content" :class="{ 'mobile-content': isMobile }">
                     梦翔工作室成立于2007年，至今已经历了13年的成长。社团一直秉承"自强不息"的理念，不断提高，努力创新。
                     梦翔社团自成立以来，紧跟软件发展方向，及时转变学习方向，让走出去的学生都能很快找到适合的就业岗位。
@@ -222,14 +262,14 @@ const mouseleave_link = (num: number) => {
               <!-- 确保每个部分的高度不超过视口 -->
               <div class="award">
                 <div class="context">
-                  <div class="section_title">奖项展示</div>
-                  <div class="line"></div>
+                  <div class="section_title" :class="{ 'mobile_second_title': isMobile }">奖项展示</div>
+                  <div class="line" :class="{ 'mobile-line': isMobile }"></div>
                   <div class="content"
                     style="display: flex; justify-content: center; align-items: center; height: 100%">
                     <el-carousel :interval="4000" :type="isMobile ? '' : 'card'" :height="isMobile ? '40vh' : '50vh'"
                       class="pictures" :style="isMobile ? 'width: 90vw' : 'width: 70vw'">
                       <el-carousel-item v-for="item in 6" :key="item">
-                        <img src='../../assets/lk.jpg' alt="图片" style="width: 100%; height: 100%" />
+                        <img src='../../assets/lk.jpg' alt="图片" style="width: 100%;" />
                       </el-carousel-item>
                     </el-carousel>
                   </div>
@@ -311,6 +351,8 @@ const mouseleave_link = (num: number) => {
     </div>
   </Transition>
 
+  <!-- 加载动画 -->
+  <LoadingScreen v-if="showLoading" style="position: fixed" />
 </template>
 
 <style scoped>
@@ -347,8 +389,8 @@ const mouseleave_link = (num: number) => {
 
 .enum_icon {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 60px;
+  right: 60px;
   width: 60px;
   z-index: 2;
 }
@@ -361,8 +403,8 @@ const mouseleave_link = (num: number) => {
   position: fixed;
   z-index: 3;
   width: 120px;
-  top: 65px;
-  right: 55px;
+  top: 105px;
+  right: 105px;
   font-weight: 700;
   border: 1px solid white;
   border-radius: 10px 0 12px 10px;
@@ -521,6 +563,15 @@ a {
 }
 
 /* 菜单 */
+@keyframes color_change {
+  0% {
+    background-color: #232323;
+  }
+
+  100% {
+    background-color: #44475c;
+  }
+}
 
 .enum_bgc {
   display: flex;
@@ -528,11 +579,15 @@ a {
   position: relative;
   width: 100%;
   height: 100vh;
-  background-color: #44475c;
   color: white;
   z-index: 1000;
   transform-origin: center;
   will-change: opacity, transform;
+  background-color: #232323;
+}
+
+.enum_bgc_animate {
+  animation: color_change 3s forwards;
 }
 
 .enum_title {
@@ -648,6 +703,9 @@ a {
   width: 200px;
   height: 100px;
   background: url('../../assets/bear.png') repeat-x;
+}
+
+.bear_animation {
   animation: bearComing 7s both, bearRun 1s infinite steps(8);
 }
 
@@ -734,6 +792,23 @@ a {
   z-index: 1000;
 }
 
+.mobile-container-title {
+  font-size: 10vh !important;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  margin: 0 auto;
+  top: 23%;
+}
+
+.mobile_second_title {
+  font-size: 10vw !important;
+  padding-top: 15vh !important;
+}
+
+.mobile-line {
+  width: 40vw !important;
+}
+
 .mobile-indicator span {
   width: 10px;
   height: 10px;
@@ -749,8 +824,8 @@ a {
 
 .mobile-content {
   width: 85% !important;
-  font-size: 16px !important;
-  line-height: 28px !important;
+  font-size: 18px !important;
+  line-height: 30px !important;
 }
 
 .mobile-title {
@@ -787,7 +862,6 @@ a {
 
 .mobile-bear {
   transform: scale(0.7);
-  animation: mobile_bearComing 7s both, bearRun 1s infinite steps(8);
 }
 
 .mobile-link-row {

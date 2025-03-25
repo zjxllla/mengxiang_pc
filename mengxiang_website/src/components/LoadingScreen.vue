@@ -1,68 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-
-const props = defineProps({
-  // 是否显示加载动画
-  show: {
-    type: Boolean,
-    default: true
-  }
-})
+import { ref } from 'vue'
 
 // 加载动画状态
 const loading = ref(true)
 
-// 发出加载完成事件
-const emit = defineEmits(['loaded'])
-
-// 在组件挂载后，模拟资源加载
-onMounted(() => {
-  // 创建一个图片加载检测数组
-  const imagesToLoad = [
-    '../assets/bear.png',
-    '../assets/bottom.png',
-    '../assets/enum_computer.png',
-    '../assets/enum_computer_active.png',
-    '../assets/icon.png',
-    '../assets/lk.jpg',
-    '../assets/main_pic1.jpg',
-    '../assets/main_pic2.jpg',
-    '../assets/main_pic3.jpg',
-    '../assets/enum_pic1.jpg'
-  ]
-
-  // 加载所有图片
-  const imagePromises = imagesToLoad.map(src => {
-    return new Promise((resolve) => {
-      const img = new Image()
-      img.onload = () => resolve(true)
-      img.onerror = () => resolve(false) // 即使加载失败也继续
-      img.src = new URL(src, import.meta.url).href
-    })
-  })
-
-  // 当所有图片加载完成或超时后
-  Promise.all(imagePromises).then(() => {
-    // 添加一个小延迟，确保DOM渲染完成
-    setTimeout(() => {
-      loading.value = false
-      emit('loaded')
-    }, 500)
-  })
-
-  // 设置最大加载时间，避免无限等待
-  setTimeout(() => {
-    if (loading.value) {
-      loading.value = false
-      emit('loaded')
-    }
-  }, 5000) // 最多等待5秒
-})
 </script>
 
 <template>
   <Transition name="fade">
-    <div v-if="props.show && loading" class="loading-screen">
+    <div v-if="loading" class="loading-screen">
       <div class="loading-container">
         <div class="loading-spinner"></div>
         <div class="loading-text">梦翔工作室</div>
