@@ -233,7 +233,10 @@ const mouseleave_link = (num: number) => {
             <div id="part1" class="scroll-section" :class="{ active: currentIndex.includes(0) }" style="height: 100vh">
               <!-- 确保每个部分的高度不超过视口 -->
               <div class="title_bgc">
-                <h1 class="title" :class="{ 'mobile-container-title': isMobile }">梦翔工作室</h1>
+                <h1 class="title" :class="{ 'mobile-container-title': isMobile }">
+                  <span v-for="(char, index) in '梦翔工作室'" :key="index" class="char"
+                    :style="{ 'animation-delay': `${index * 0.4}s` }">{{ char }}</span>
+                </h1>
                 <div v-if="isMobile"><img src="../../assets/bottom.png" alt="" width="30px"
                     style="position: absolute;bottom: 0;left: 45vw; "></div>
               </div>
@@ -475,12 +478,33 @@ a {
   z-index: 0;
 }
 
+@keyframes char_appear {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .title {
   position: relative;
   text-align: center;
   top: 30%;
   z-index: 1;
+  height: 30vh;
   color: white;
+  display: flex;
+  justify-content: center;
+}
+
+.char {
+  display: inline-block;
+  opacity: 0;
+  animation: char_appear 0.5s ease-in-out forwards;
 }
 
 .context {

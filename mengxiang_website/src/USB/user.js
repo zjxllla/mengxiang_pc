@@ -1,102 +1,63 @@
-import request from '@/utils/request'
+import express from 'express'
+import cors from 'cors'
+import { MysqlConnect } from '../MySQL/index.js'
+import bcrypt from 'bcryptjs'
+
+const db = await MysqlConnect()
+const app = express()
+app.use(cors())
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
+app.use((req, res, next) => {
+  // status 默认是 0 表示失败的情况
+  res.cc = (err, status = 0) => {
+    res.send({
+      status,
+      message: err instanceof Error ? err.message : err,
+    })
+  }
+  next()
+})
 
 // 注册
-export const userRegisterService = ({ username, password }) => {
-  // 使用 URLSearchParams 来构建 x-www-form-urlencoded 格式的数据
-  const params = new URLSearchParams({
-    username,
-    password,
-  })
-
-  return request.post(
-    '/api/reguser', // 确保这是你想要请求的 API 路径
-    params, // 将 params 作为请求体发送
-    {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded', // 确保请求头正确设置
-      },
-    },
-  )
-}
-
+app.post('/register', async (req, res) => {
+  if (req.body.account === '' || req.body.password === '') {
+    return res.cc('用户名或密码不能为空')
+  }
+  const sql1 = `select * from user where account = '${req.body.account}'`
+  req.body.password = bcrypt.hashSync(req.body.password, 10)
+  const sql2 = `insert into user values ('${req.body.account}', '${req.body.password}')`
+  const [rows] = await db.query(sql1)
+  if (rows.length > 0) {
+    return res.cc('用户名已存在')
+  }
+  const [rows2] = await db.query(sql2)
+  if (rows2.affectedRows !== 1) {
+    return res.cc('注册失败')
+  } else {
+    return res.cc('注册成功', 1)
+  }
+})
 // 登录
+app.post('/login', async (req, res) => {
+  if (req.body.account === '' || req.body.password === '') {
+    return res.cc('用户名或密码不能为空')
+  }
+  const sql = `select password from user where account = '${req.body.account}'`
+  const [rows] = await db.query(sql)
+  if (rows.length === 0) {
+    return res.cc('用户名或密码错误')
+  } else {
+    const password = rows[0].password
+    const compareResult = bcrypt.compareSync(req.body.password, password)
+    if (!compareResult) {
+      return res.cc('用户名或密码错误')
+    } else {
+      return res.cc('登录成功', 1)
+    }
+  }
+})
 
-export const userLoginService = ({ username, password }) => {
-  // 使用 URLSearchParams 来构建 x-www-form-urlencoded 格式的数据
-  const params = new URLSearchParams({
-    username,
-    password,
-  })
-
-  return request.post(
-    '/api/login', // 确保这是你想要请求的 API 路径
-    params, // 将 params 作为请求体发送
-    {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded', // 确保请求头正确设置
-      },
-    },
-  )
-}
-
-// 获取用户信息
-export const userGetInfoService = () =>
-  request.get('/my/userinfo', {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded', // 确保请求头正确设置
-    },
-  })
-
-// 更改用户信息
-export const userUpdateInfoService = ({ id, nickname, email }) => {
-  // 使用 URLSearchParams 来构建 x-www-form-urlencoded 格式的数据
-  const params = new URLSearchParams({
-    id,
-    nickname,
-    email,
-  })
-
-  return request.post(
-    'my/userinfo', // 确保这是你想要请求的 API 路径
-    params, // 将 params 作为请求体发送
-    {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded', // 确保请求头正确设置
-      },
-    },
-  )
-}
-
-// 重置密码
-export const userUpdatePassService = ({ oldPwd, newPwd }) => {
-  // 使用 URLSearchParams 来构建 x-www-form-urlencoded 格式的数据
-  const params = new URLSearchParams({
-    oldPwd,
-    newPwd,
-  })
-
-  return request.post(
-    'my/updatepwd', // 确保这是你想要请求的 API 路径
-    params, // 将 params 作为请求体发送
-    {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded', // 确保请求头正确设置
-      },
-    },
-  )
-}
-
-// 更换头像
-export const userUploadAvatarService = (avatar) => {
-  // 使用 URLSearchParams 构建请求体
-  const params = new URLSearchParams({
-    avatar: avatar,
-  })
-
-  // 发送 POST 请求
-  return request.post('my/update/avatar', params, {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded', // 确保请求头正确设置
-    },
-  })
-}
+app.listen(8080, () => {
+  console.log('http://localhost:8080')
+})
