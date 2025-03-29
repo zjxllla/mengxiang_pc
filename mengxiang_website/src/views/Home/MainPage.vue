@@ -25,6 +25,7 @@ const showLoading = ref(true)
 // 检测是否为移动设备
 const checkMobile = () => {
   isMobile.value = window.innerWidth <= 768
+  globalStore.isMobile = isMobile.value
 }
 
 // PC端滚轮事件处理

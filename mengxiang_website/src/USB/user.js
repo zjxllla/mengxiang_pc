@@ -57,6 +57,24 @@ app.post('/login', async (req, res) => {
     }
   }
 })
+// 完善详细信息
+app.post('/improve/info', async (req, res) => {
+  if (req.body.account === '' || req.body.name === '' || req.body.gender === '' || req.body.grade === '') {
+    return res.cc('请填写完整信息')
+  }
+  const sql = `select * from user_message where account = '${req.body.account}'`
+  const [rows] = await db.query(sql)
+  if (rows.length > 0) {
+    return res.cc('您已完善过信息')
+  }
+  const sql1 = `insert into user_message values ('${req.body.account}', '${req.body.name}', '${req.body.gender}', '${req.body.grade}','${req.body.tel? req.body.tel : ''}','${req.body.motto? req.body.motto : ''}','${req.body.avatar? req.body.avatar : ''}')`
+  const [rows2] = await db.query(sql1)
+  if (rows2.affectedRows !== 1) {
+    return res.cc('完善信息失败')
+  } else {
+    return res.cc('完善信息成功', 1)
+  }
+})
 
 app.listen(8080, () => {
   console.log('http://localhost:8080')

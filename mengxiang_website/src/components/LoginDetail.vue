@@ -1,18 +1,35 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import axios from "@/axios"
+import { useUserStore } from "@/stores"
+import { useGlobalStore } from "@/stores"
+import { ElMessage } from 'element-plus'
+
+const userstore = useUserStore()
+const globalStore = useGlobalStore()
+const isMobile = ref(false)
+isMobile.value = globalStore.isMobile
 const gender = ref('0');
 const name = ref('');
 const grade = ref('');
 const tel = ref('');
 const motto = ref('');
 
-const submit = (event: Event) => {
+const submit = async (event: Event) => {
   event.preventDefault();
-  console.log(gender.value);
-  console.log(name.value);
-  console.log(grade.value);
-  console.log(tel.value);
-  console.log(motto.value);
+  const res = await axios.post('/improve/info', {
+    account: userstore.get_account(),
+    name: name.value,
+    gender: gender.value,
+    grade: grade.value,
+    tel: tel.value,
+    motto: motto.value,
+  })
+  if (res.data.status === 0) {
+    ElMessage.error(res.data.message)
+  } else {
+    ElMessage.success(res.data.message)
+  }
 }
 
 const radio = () => {
@@ -44,8 +61,9 @@ const radio = () => {
     <label>
       <span style="color:#808080; padding-left: 0.5vw; margin-right: 5vw;" class="gender_title">性别</span>
       <el-radio-group v-model="gender">
-        <el-radio value="1" size="large" style="margin-right: 5vw;" @click="radio">男</el-radio>
-        <el-radio value="2" size="large" @click="radio">女</el-radio>
+        <el-radio value="1" :size="isMobile ? 'default' : 'large'" style="margin-right: 5vw;"
+          @click="radio">男</el-radio>
+        <el-radio value="2" :size="isMobile ? 'default' : 'large'" @click="radio">女</el-radio>
       </el-radio-group>
     </label>
     <label>
@@ -68,6 +86,15 @@ const radio = () => {
   position: relative;
 }
 
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+  .form {
+    max-width: 85vw;
+    padding: 15px;
+    gap: 8px;
+  }
+}
+
 .title {
   font-size: 28px;
   color: royalblue;
@@ -77,6 +104,14 @@ const radio = () => {
   display: flex;
   align-items: center;
   padding-left: 30px;
+}
+
+/* 移动端适配标题 */
+@media screen and (max-width: 768px) {
+  .title {
+    font-size: 24px;
+    padding-left: 25px;
+  }
 }
 
 .title::before,
@@ -126,6 +161,14 @@ const radio = () => {
   gap: 6px;
 }
 
+/* 移动端适配flex布局 */
+@media screen and (max-width: 768px) {
+  .flex {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
 .form label {
   position: relative;
 }
@@ -136,6 +179,13 @@ const radio = () => {
   outline: 0;
   border: 1px solid rgba(105, 105, 105, 0.397);
   border-radius: 10px;
+}
+
+/* 移动端适配输入框 */
+@media screen and (max-width: 768px) {
+  .form label .input {
+    padding: 8px 8px 18px 8px;
+  }
 }
 
 .form label .input+span {
@@ -174,6 +224,14 @@ const radio = () => {
   font-size: 16px;
   transform: .3s ease;
   margin-top: 10px;
+}
+
+/* 移动端适配提交按钮 */
+@media screen and (max-width: 768px) {
+  .submit {
+    padding: 8px;
+    font-size: 14px;
+  }
 }
 
 .submit:hover {

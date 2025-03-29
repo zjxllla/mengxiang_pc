@@ -5,10 +5,12 @@ import axios from "@/axios"
 import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { useUserStore } from "@/stores"
+import { useGlobalStore } from "@/stores"
 import LoginDetail from "@/components/LoginDetail.vue"
 
 const form = ref()
 const regist_success = ref(false)
+const globalStore = useGlobalStore()
 const userstore = useUserStore()
 const isRegister = ref(false)
 const shapesVisible = ref(true)
@@ -17,6 +19,8 @@ const formModel = ref({
   password: '',
   Invitation: ''
 })
+const isMobile = ref(true)
+isMobile.value = globalStore.isMobile
 // 注册规则
 const rules = {
   username: [
@@ -99,6 +103,7 @@ const register = async () => {
     if (res.data.status === 0) {
       ElMessage.error(res.data.message)
     } else {
+      userstore.set_account(formModel.value.username)
       ElMessage.success(res.data.message)
       regist_success.value = true
     }
@@ -140,16 +145,16 @@ const login = async () => {
   <!-- 登录页面 -->
   <div class="login_interface">
     <transition name="shape-transition">
-      <div class="shape" v-if="shapesVisible" key="shape1"></div>
+      <div class="shape" v-if="shapesVisible && !isMobile" key="shape1"></div>
     </transition>
     <transition name="shape-transition">
-      <div class="shape" v-if="shapesVisible" key="shape2"></div>
+      <div class="shape" v-if="shapesVisible && !isMobile" key="shape2"></div>
     </transition>
     <!-- 表单切换动画 -->
     <transition name="form-fade" mode="out-in">
       <!-- 注册 -->
-      <el-form :model="formModel" :rules="rules" ref="form" size="large" autocomplete="off" v-if="isRegister"
-        class="form" key="register">
+      <el-form :model="formModel" :rules="rules" ref="form" :size="isMobile ? 'default' : 'large'" autocomplete="off"
+        v-if="isRegister" class="form" key="register">
         <el-form-item>
           <div class='title'>
             <h1>注册</h1>
@@ -162,7 +167,7 @@ const login = async () => {
           <el-input v-model="formModel.password" :prefix-icon="Lock" type="password" placeholder="请输入密码"></el-input>
         </el-form-item>
         <el-form-item prop="Invitation">
-          <el-input v-model="formModel.Invitation" :prefix-icon="Lock" type="password" placeholder="请输入邀请码"></el-input>
+          <el-input v-model="formModel.Invitation" :prefix-icon="Lock" placeholder="请输入邀请码"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button class="register_button" type="primary" auto-insert-space @click="register">注册</el-button>
@@ -175,8 +180,8 @@ const login = async () => {
         </el-form-item>
       </el-form>
       <!-- 登录 -->
-      <el-form ref="form" :model="formModel" :rules="rules" size="large" autocomplete="off" v-else class="form"
-        key="login">
+      <el-form ref="form" :model="formModel" :rules="rules" :size="isMobile ? 'default' : 'large'" autocomplete="off"
+        v-else class="form" key="login">
         <el-form-item>
           <div class='title'>
             <h1>登录</h1>
@@ -205,6 +210,7 @@ const login = async () => {
   <!-- 详细信息 -->
   <LoginDetail class="loginDetail" v-if="regist_success"></LoginDetail>
 </template>
+
 <style scoped>
 .mask {
   position: fixed;
@@ -235,12 +241,27 @@ const login = async () => {
   transform: translate(-50%, -50%);
 }
 
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+  .login_interface {
+    width: 85%;
+  }
+}
+
 .login_interface .shape {
   height: 10vw;
   width: 10vw;
   position: absolute;
   border-radius: 50%;
   /* 移除内联动画，完全依赖Vue的transition组件 */
+}
+
+/* 移动端适配shape元素 */
+@media screen and (max-width: 768px) {
+  .login_interface .shape {
+    height: 20vw;
+    width: 20vw;
+  }
 }
 
 .shape:nth-child(1) {
@@ -255,6 +276,19 @@ const login = async () => {
   bottom: -15%;
 }
 
+/* 移动端适配shape元素位置 */
+@media screen and (max-width: 768px) {
+  .shape:nth-child(1) {
+    left: -15%;
+    top: -10%;
+  }
+
+  .shape:nth-child(2) {
+    right: -15%;
+    bottom: -10%;
+  }
+}
+
 
 .form {
   width: 100%;
@@ -264,6 +298,13 @@ const login = async () => {
   border: 2px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 0 40px rgba(8, 7, 16, 0.6);
   padding: 50px 35px;
+}
+
+/* 移动端适配表单样式 */
+@media screen and (max-width: 768px) {
+  .form {
+    padding: 30px 20px;
+  }
 }
 
 :deep(.el-input .el-input__wrapper) {
@@ -305,6 +346,18 @@ const login = async () => {
 
 .reset_button:hover {
   background-color: rgba(245, 126, 36, 1);
+}
+
+/* 移动端适配按钮样式 */
+@media screen and (max-width: 768px) {
+  .register_button {
+    width: 45%;
+  }
+
+  .reset_button {
+    width: 45%;
+    margin-left: 10%;
+  }
 }
 
 .flex {
