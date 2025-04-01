@@ -75,6 +75,33 @@ app.post('/improve/info', async (req, res) => {
     return res.cc('完善信息成功', 1)
   }
 })
+// 获取用户信息
+app.get('/user/info', async (req, res) => {
+  if (req.query.account === '') {
+    return res.cc('请传入账号')
+  }
+  const sql = `select * from user_message where account = '${req.query.account}'`
+  const [rows] = await db.query(sql)
+  if (rows.length !== 1) {
+    return res.cc('用户不存在')
+  }else{
+    return res.cc(rows[0], 1)
+  }
+})
+// 修改用户信息
+app.post('/alter/info', async (req, res) => {
+  if (req.body.account === '') {
+    return res.cc('请传入账号')
+  }else{
+    const sql = `update user_message set name = '${req.body.name}', gender = '${req.body.gender}', grade = '${req.body.grade}', tel = '${req.body.tel ? req.body.tel : ''}', motto = '${req.body.motto ? req.body.motto : ''}', avatar = '${req.body.avatar ? req.body.avatar : ''}' where account = '${req.body.account}'`
+    const [rows] = await db.query(sql)
+    if (rows.affectedRows!== 1) {
+      return res.cc('修改信息失败')
+    } else {
+      return res.cc('修改信息成功', 1)
+    }
+  }
+})
 
 app.listen(8080, () => {
   console.log('http://localhost:8080')

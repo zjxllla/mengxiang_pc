@@ -14,6 +14,7 @@ const name = ref('');
 const grade = ref('');
 const tel = ref('');
 const motto = ref('');
+const grades = ['大一', '大二', '大三']
 
 const submit = async (event: Event) => {
   event.preventDefault();
@@ -48,8 +49,9 @@ const radio = () => {
       </label>
 
       <label>
-        <input :required="true" type="text" class="input" v-model="grade">
-        <span>年级</span>
+        <el-select v-model="grade" placeholder="年级" size="large" style="width: 8vw;height: 100%;">
+          <el-option v-for="(item, index) in grades" :key="index" :value="item" style="height: 100%;" />
+        </el-select>
       </label>
     </div>
 
@@ -253,5 +255,18 @@ const radio = () => {
     transform: scale(1.8);
     opacity: 0;
   }
+}
+
+::v-deep .el-select--large .el-select__wrapper {
+  min-height: 47px;
+  border: 1px solid rgba(105, 105, 105, 0.397);
+  border-radius: 10px;
+}
+
+::v-deep .el-select .is-transparent {
+  color: #808080 !important;
+}
+::v-deep.el-select__placeholder {
+  color:  black !important;
 }
 </style>

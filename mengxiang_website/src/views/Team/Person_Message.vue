@@ -11,6 +11,8 @@ const drawer_data = ref({})
 const drawer = ref(false)
 
 const globalStore = useGlobalStore();
+// const isMobile = ref(globalStore.isMobile);
+const isMobile = ref(true);
 const avatar_boy = new URL('@/assets/default_avatar_boy.png', import.meta.url).href;
 const avatar_gril = new URL('@/assets/default_avatar_girl.png', import.meta.url).href;
 const waterfallSettings = ref({
@@ -219,121 +221,6 @@ const freshmanMembers = ref([
   },
 ]);
 
-// // 模拟大二成员数据
-// const sophomoreMembers = ref([
-//   {
-//     id: 1,
-//     name: '李康康',
-//     position: '负责人',
-//     direction: '人工智能',
-//     qq: '2128393718',
-//     avatar: '/src/assets/Avatar.png',
-//     motto: '故事还长，都先别慌'
-//   },
-//   {
-//     id: 1,
-//     name: '李康康',
-//     position: '负责人',
-//     direction: '人工智能',
-//     qq: '2128393718',
-//     avatar: '/src/assets/Avatar.png',
-//     motto: '故事还长，都先别慌'
-//   },
-//   {
-//     id: 1,
-//     name: '李康康',
-//     position: '负责人',
-//     direction: '人工智能',
-//     qq: '2128393718',
-//     avatar: '/src/assets/Avatar.png',
-//     motto: '故事还长，都先别慌'
-//   },
-//   {
-//     id: 1,
-//     name: '李康康',
-//     position: '负责人',
-//     direction: '人工智能',
-//     qq: '2128393718',
-//     avatar: '/src/assets/Avatar.png',
-//     motto: '故事还长，都先别慌'
-//   },
-//   {
-//     id: 1,
-//     name: '李康康',
-//     position: '负责人',
-//     direction: '人工智能',
-//     qq: '2128393718',
-//     avatar: '/src/assets/Avatar.png',
-//     motto: '故事还长，都先别慌'
-//   },
-//   {
-//     id: 1,
-//     name: '李康康',
-//     position: '负责人',
-//     direction: '人工智能',
-//     qq: '2128393718',
-//     avatar: '/src/assets/Avatar.png',
-//     motto: '故事还长，都先别慌'
-//   },
-// ]);
-
-// // 模拟大三成员数据
-// const juniormoreMembers = ref([
-//   {
-//     id: 1,
-//     name: '侯俊宇',
-//     position: '负责人',
-//     direction: '人工智能',
-//     qq: '2128393718',
-//     avatar: '/src/assets/Avatar.png',
-//     motto: '故事还长，都先别慌'
-//   },
-//   {
-//     id: 1,
-//     name: '侯俊宇',
-//     position: '负责人',
-//     direction: '人工智能',
-//     qq: '2128393718',
-//     avatar: '/src/assets/Avatar.png',
-//     motto: '故事还长，都先别慌'
-//   },
-//   {
-//     id: 1,
-//     name: '侯俊宇',
-//     position: '负责人',
-//     direction: '人工智能',
-//     qq: '2128393718',
-//     avatar: '/src/assets/Avatar.png',
-//     motto: '故事还长，都先别慌'
-//   },
-//   {
-//     id: 1,
-//     name: '侯俊宇',
-//     position: '负责人',
-//     direction: '人工智能',
-//     qq: '2128393718',
-//     avatar: '/src/assets/Avatar.png',
-//     motto: '故事还长，都先别慌'
-//   },
-//   {
-//     id: 1,
-//     name: '侯俊宇',
-//     position: '负责人',
-//     direction: '人工智能',
-//     qq: '2128393718',
-//     avatar: '/src/assets/Avatar.png',
-//     motto: '故事还长，都先别慌'
-//   },
-//   {
-//     id: 1,
-//     name: '侯俊宇',
-//     position: '负责人',
-//     direction: '人工智能',
-//     qq: '2128393718',
-//     avatar: '/src/assets/Avatar.png',
-//     motto: '故事还长，都先别慌'
-//   },
-// ]);
 const back = () => {
   globalStore.setBackto_enum(true)
   window.history.back();
@@ -380,8 +267,8 @@ const expand = (num: number) => {
 </script>
 
 <template>
-  <div class="back">
-    <img src="../../assets/back.png" style="width: 5vw;" @click="back">
+  <div class="back" :class="{ Mobile_back: isMobile }">
+    <img src="../../assets/back.png" style="width: 5vw;" @click="back" :class="{ Mobile_back_img: isMobile }">
   </div>
   <div class="drop_menu">
     <el-dropdown>
@@ -412,7 +299,7 @@ const expand = (num: number) => {
           </div>
           <div class="info">
             <h2><i class="iconfont icon-mingziname" style="font-size: 30px; margin-right: 10px;color: skyblue;"></i> {{
-      item.name }}
+    item.name }}
             </h2>
             <p><i class="iconfont icon-xingbie" style="color: chocolate; margin-right: 10px"></i> {{ item.grade }}</p>
             <p><i class="iconfont icon-nianji" style="margin-right: 10px"></i> {{ item.school }}</p>
@@ -425,7 +312,7 @@ const expand = (num: number) => {
     </Waterfall>
   </div>
 
-  <el-drawer v-model="drawer" :with-header="false" size="28%">
+  <el-drawer v-model="drawer" :with-header="false" size="28%" v-if="!isMobile">
     <div class="drawer_card">
       <div class="avatar">
         <img
@@ -513,6 +400,8 @@ const expand = (num: number) => {
 
 .card {
   display: flex;
+  perspective: 500px;
+  transform-style: preserve-3d;
   flex-direction: column;
   background-color: #fff;
   border-radius: 10px;
@@ -578,5 +467,14 @@ const expand = (num: number) => {
   display: flex;
   align-items: center;
   font-size: 1.5vw;
+}
+
+/* 移动端样式调整 */
+.Mobile_back {
+  top: 6vh;
+}
+
+.Mobile_back_img {
+  width: 11vw !important;
 }
 </style>
