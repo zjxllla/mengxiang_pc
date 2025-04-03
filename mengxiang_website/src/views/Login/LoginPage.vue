@@ -7,12 +7,13 @@ import type { FormInstance } from 'element-plus'
 import { useUserStore } from "@/stores"
 import { useGlobalStore } from "@/stores"
 import LoginDetail from "@/components/LoginDetail.vue"
+import BackBtn from '@/components/BackBtn.vue';
 
 const form = ref()
 const regist_success = ref(false)
 const globalStore = useGlobalStore()
 const userstore = useUserStore()
-const isRegister = ref(false)
+const isRegister = ref(true)
 const shapesVisible = ref(true)
 const formModel = ref({
   username: '',
@@ -137,9 +138,16 @@ const login = async () => {
 
 }
 
+// 返回
+const back = () => {
+  window.history.back()
+}
 </script>
 
 <template>
+  <div class="back" :class="{ 'Mobile_back': isMobile }">
+    <BackBtn @click="back"></BackBtn>
+  </div>
   <div class="mask" v-if="regist_success"></div>
   <div class="bgc"></div>
   <!-- 登录页面 -->
@@ -212,6 +220,17 @@ const login = async () => {
 </template>
 
 <style scoped>
+.back {
+  position: fixed;
+  top: 4vh;
+  left: 1vw;
+  z-index: 1;
+}
+
+.Mobile_back {
+  top: 5vh;
+}
+
 .mask {
   position: fixed;
   top: 0;
@@ -229,8 +248,8 @@ const login = async () => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: url('../../assets/login_bgc.jpg') no-repeat center;
-  background-size: cover
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/login_bgc.jpg') no-repeat center;
+  background-size: cover;
 }
 
 .login_interface {

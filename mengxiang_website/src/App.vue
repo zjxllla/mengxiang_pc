@@ -1,10 +1,39 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import LoadingScreen from './components/LoadingScreen.vue'
 
+// 获取LoadingScreen组件实例
+const loadingScreen = ref<InstanceType<typeof LoadingScreen> | null>(null)
+const router = useRouter()
+
+// 设置路由切换时的加载动画
+onMounted(() => {
+  // 全局前置守卫 - 路由开始切换时显示加载动画
+  router.beforeEach((to, from, next) => {
+    // 如果是首次加载或路由确实发生了变化
+    if (from.path !== to.path) {
+      loadingScreen.value?.showLoading()
+    }
+    next()
+  })
+
+  // 全局后置钩子 - 路由切换完成后隐藏加载动画
+  router.afterEach(() => {
+    // 延迟一段时间再隐藏加载动画，确保新页面已加载
+    setTimeout(() => {
+      loadingScreen.value?.hideLoading()
+    }, 500) // 可以根据需要调整延迟时间
+  })
+})
 </script>
 
 <template>
   <div class="app-container">
-    <!-- 只有在加载完成后才显示主内容 -->
+    <!-- 加载动画组件 -->
+    <LoadingScreen ref="loadingScreen" />
+
+    <!-- 路由视图 -->
     <router-view v-slot="{ Component }">
       <transition name="fade" mode="out-in">
         <component :is="Component" />

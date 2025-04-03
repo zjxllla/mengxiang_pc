@@ -183,7 +183,7 @@ const to_enum = () => {
 }
 
 // 菜单
-const pic_src = ref(new URL('../../assets/enum_computer.png', import.meta.url).href)
+const pic_src = ref('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/enum_computer.png')
 const light = ref(true)
 
 const back = () => {
@@ -207,7 +207,7 @@ const move_out = () => {
   document.querySelector('.enum_line')?.classList.add('line_out')
 };
 const change_pic = () => {
-  pic_src.value = light.value ? new URL('../../assets/enum_computer_active.png', import.meta.url).href : new URL('../../assets/enum_computer.png', import.meta.url).href
+  pic_src.value = light.value ? 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/enum_computer_active.png' : 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/enum_computer.png'
   light.value = !light.value
 }
 const mousein_link = (num: number) => {
@@ -223,7 +223,8 @@ const mouseleave_link = (num: number) => {
 <template>
   <Transition name="fade-slide">
     <div class="container" v-show="showContainer">
-      <img src="../../assets/icon.png" alt="菜单" class="enum_icon" @click="to_enum" />
+      <img src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/icon.png" alt="菜单"
+        class="enum_icon" @click="to_enum" />
       <Transition>
         <div class="enum_text" v-if="ifShow">点我试试!</div>
       </Transition>
@@ -273,7 +274,8 @@ const mouseleave_link = (num: number) => {
                     <el-carousel :interval="4000" :type="isMobile ? '' : 'card'" :height="isMobile ? '40vh' : '50vh'"
                       class="pictures" :style="isMobile ? 'width: 90vw' : 'width: 70vw'">
                       <el-carousel-item v-for="item in 6" :key="item">
-                        <img src='../../assets/lk.jpg' alt="图片" style="width: 100%;" />
+                        <img src='https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/lk.jpg'
+                          alt="图片" style="width: 100%;" />
                       </el-carousel-item>
                     </el-carousel>
                   </div>
@@ -306,7 +308,7 @@ const mouseleave_link = (num: number) => {
     <div class="enum_bgc" v-show="showMenu" v-if="container_over">
       <el-row>
         <el-col :xs="24" :sm="12" :md="6" class="enum_title">
-          <img src="../../assets/icon.png"
+          <img src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/icon.png"
             :style="isMobile ? 'width:60px;margin-left:20px;' : 'width:80px;margin-left:60px;'"
             style="vertical-align: middle;">
           <div class="title_name" :class="{ 'mobile-title': isMobile }">梦翔工作室</div>
@@ -464,7 +466,7 @@ a {
   font-size: 80px;
   font-weight: bold;
   color: #000;
-  background: url('../../assets/main_pic1.jpg') no-repeat center;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic1.jpg') no-repeat center;
   background-size: cover;
 }
 
@@ -543,11 +545,11 @@ a {
 }
 
 .about_us {
-  background: url('../../assets/main_pic2.jpg') no-repeat center;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic2.jpg') no-repeat center;
 }
 
 .award {
-  background: url('../../assets/main_pic3.jpg') no-repeat center;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic3.jpg') no-repeat center;
 }
 
 .about_us::before,
@@ -609,6 +611,7 @@ a {
   transform-origin: center;
   will-change: opacity, transform;
   background-color: #232323;
+  overflow: hidden;
 }
 
 .enum_bgc_animate {
@@ -727,7 +730,7 @@ a {
 .bear {
   width: 200px;
   height: 100px;
-  background: url('../../assets/bear.png') repeat-x;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/bear.png') repeat-x;
 }
 
 .bear_animation {

@@ -1,4 +1,57 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import NewTeamButton from '../../components/NewTeamButton.vue'
+import { useGlobalStore } from '../../stores'
+import BackBtn from '@/components/BackBtn.vue';
+
+const observe = ref<IntersectionObserver | null>(null)
+const vedio_ref = ref<HTMLVideoElement | null>(null)
+const life_item3_timer = ref(0)
+const count = ref(0)
+const globalStore = useGlobalStore()
+const isMobile = ref(globalStore.isMobile)
+const listen_count = ref(0)
+onMounted(() => {
+  // 设置视频倍速
+  if (vedio_ref.value) {
+    (vedio_ref.value as HTMLVideoElement).playbackRate = 0.75
+  }
+  // 开启轮播背景
+  life_item_bgc_change()
+  // 监听图标进入视口自动播放动画
+  observe.value = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (listen_count.value === 4) {
+        observe.value?.disconnect()
+      }
+      if (entry.isIntersecting) {
+        const target = entry.target as HTMLElement
+        if (target.classList.contains('icon-item1')) {
+          icon_item_rotate()
+          listen_count.value++
+        } else if (target.classList.contains('icon-item2')) {
+          icon_item2_rotate()
+          listen_count.value++
+        } else if (target.classList.contains('icon-item3')) {
+          icon_item3_animate()
+          listen_count.value++
+        } else if (target.classList.contains('icon-item4')) {
+          icon_item4_animate()
+          listen_count.value++
+        }
+      }
+    })
+  }, { threshold: 0.9, rootMargin: '0px' })
+  document.querySelectorAll('.icon-item1,.icon-item2,.icon-item3,.icon-item4').forEach((item) => {
+    observe.value?.observe(item)
+  })
+})
+
+// 返回上一页
+const back = () => {
+  globalStore.setBackto_enum(true)
+  window.history.back()
+}
 // 第一个图标动画
 const icon_item_rotate = () => {
   const icon_item = document.querySelector('.icon-item1') as HTMLElement
@@ -65,29 +118,69 @@ const icon_item4_animate = () => {
     }, 2500)
   }, 2500)
 }
-
 // life-item的动画
 const life_item1_in = (index: number) => {
   const life_text = document.querySelectorAll('.life-text')[index] as HTMLElement
+  if (index === 2) {
+    clearInterval(life_item3_timer.value)
+  }
   life_text.classList.add('life-text-in')
+
 }
 const life_item1_out = (index: number) => {
   const life_text = document.querySelectorAll('.life-text')[index] as HTMLElement
+  if (index === 2) {
+    life_item_bgc_change()
+  }
   life_text.classList.remove('life-text-in')
   life_text.classList.add('life-text-out')
   setTimeout(() => {
     life_text.classList.remove('life-text-out')
   }, 500);
 }
+// life背景图片轮换
+const life_item_bgc_change = () => {
+  const life_item3_bgc1 = document.querySelector('.life-item3-bgc-1') as HTMLElement
+  const life_item3_bgc2 = document.querySelector('.life-item3-bgc-2') as HTMLElement
+  const life_item3_bgc3 = document.querySelector('.life-item3-bgc-3') as HTMLElement
+  life_item3_timer.value = setInterval(() => {
+    if (count.value % 4 == 0) {
+      life_item3_bgc1.style.top = '-100%'
+      life_item3_bgc2.style.top = '0'
+      life_item3_bgc3.style.top = '100%'
+      count.value++
+    } else if (count.value % 4 == 1) {
+      life_item3_bgc1.style.top = '-200%'
+      life_item3_bgc2.style.top = '-100%'
+      life_item3_bgc3.style.top = '0'
+      count.value++
+    } else if (count.value % 4 == 2) {
+      life_item3_bgc1.style.top = '-100%'
+      life_item3_bgc2.style.top = '0'
+      life_item3_bgc3.style.top = '100%'
+      count.value++
+    } else if (count.value % 4 == 3) {
+      life_item3_bgc1.style.top = '0'
+      life_item3_bgc2.style.top = '100%'
+      life_item3_bgc3.style.top = '200%'
+      count.value++
+    }
+  }, 5000)
+}
+// 切换到登录页面
+const ToLogin = () => {
+  window.location.href = '/login'
+}
 </script>
-
 <template>
+  <div class="back" :class="{ 'Mobile_back': isMobile }">
+    <BackBtn @click="back"></BackBtn>
+  </div>
   <div class="new_team">
     <el-row>
-      <el-col :span="24" class="vedio_container">
-        <video
-          src="http://vodpub6.v.news.cn/yqfbzx-original/20230818/20230818bd5de7446029436cb41e0ff2c37e1c54_606f38a617a746988c4bb396538066dd.mp4"
-          width="100%" height="100%" muted loop autoplay class="video"></video>
+      <el-col :span="24" class="video_container" :class="{ 'mobile-video-container': isMobile }">
+        <video src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/mengxiang.mp4" width="100%"
+          height="100%" muted loop autoplay class="video" ref="vedio_ref"></video>
       </el-col>
     </el-row>
     <el-row class="title">
@@ -98,9 +191,9 @@ const life_item1_out = (index: number) => {
     </el-row>
     <el-row class="content">
       <el-col :span="2"></el-col>
-      <el-col :span="22" class="content_text">
+      <el-col :span="22" class="content_text" :class="{ 'mobile-content-text': isMobile }">
         <!-- 1 -->
-        <div class="info_box">
+        <div class="info_box" :class="{ 'mobile-info-box': isMobile }">
           <div class="icon-item1" @mouseenter="icon_item_rotate"></div>
           <div class="info-title">用行动关心你的成长</div>
           <div class="info-line"></div>
@@ -109,7 +202,7 @@ const life_item1_out = (index: number) => {
           </div>
         </div>
         <!-- 2 -->
-        <div class="info_box">
+        <div class="info_box" :class="{ 'mobile-info-box': isMobile }">
           <div class="icon-item2" @mouseenter="icon_item2_rotate">
             <div class="icon-item2-1"></div>
           </div>
@@ -120,7 +213,7 @@ const life_item1_out = (index: number) => {
           </div>
         </div>
         <!-- 3 -->
-        <div class="info_box">
+        <div class="info_box" :class="{ 'mobile-info-box': isMobile }">
           <div class="icon-item3" @mouseenter="icon_item3_animate">
             <div class="icon-item3-1"></div>
             <div class="icon-item3-2"></div>
@@ -133,7 +226,7 @@ const life_item1_out = (index: number) => {
           </div>
         </div>
         <!-- 4 -->
-        <div class="info_box">
+        <div class="info_box" :class="{ 'mobile-info-box': isMobile }">
           <div class="icon-item4" @mouseenter="icon_item4_animate">
             <div class="icon-item4-1"></div>
             <div class="icon-item4-2"></div>
@@ -152,7 +245,7 @@ const life_item1_out = (index: number) => {
         <div class="title_text">社团日常活动</div>
       </el-col>
     </el-row>
-    <el-row class="life">
+    <el-row class="life" v-if="!isMobile">
       <el-col :span="2"></el-col>
       <el-col :span="14" class="life-item1" @mouseenter="life_item1_in(0)" @mouseleave="life_item1_out(0)">
         <div class="life-title">人才有活水,组织有活力</div>
@@ -164,7 +257,7 @@ const life_item1_out = (index: number) => {
       </el-col>
       <el-col :span="6" class="life-item2" @mouseenter="life_item1_in(1)" @mouseleave="life_item1_out(1)">
         <div class="life-title">梦翔公社</div>
-        <div class="life-text" style="background: linear-gradient(to top,#0052d9,#00a9ce); padding-top: 25%">
+        <div class="life-text" style="background: linear-gradient(to top,#0052d9,#02fae9); padding-top: 25%">
           鹅民公社是腾讯弹性福利平台，你可以在公社自选健康、学习成长和鹅厂特色类福利，
           还可以向鹅民公社推荐你想要的福利，公社满足员工不同的个性化福利需求，
           从此和千人一面的“福利”说拜拜。
@@ -172,6 +265,107 @@ const life_item1_out = (index: number) => {
       </el-col>
       <el-col :span="2"></el-col>
     </el-row>
+    <el-row class="life" v-if="!isMobile">
+      <el-col :span="2"></el-col>
+      <el-col :span="8" class="life-item3" @mouseenter="life_item1_in(2)" @mouseleave="life_item1_out(2)">
+        <div class="life-item3-bgc-1"></div>
+        <div class="life-item3-bgc-2"></div>
+        <div class="life-item3-bgc-3"></div>
+        <div class="life-title">MengXiang Talk</div>
+        <div class="life-text" style="background: linear-gradient(to top,#03576a,#02fae9);padding-top: 20%;">
+          听陈晓卿、许知远等影响力大咖谈天说地，听内部同事分享的工作生活的体验和感悟，在这个分享和交流的平台里，改变人生轨迹的灵光也许就此闪现。
+        </div>
+      </el-col>
+      <el-col :span="12" class="life-item4" @mouseenter="life_item1_in(3)" @mouseleave="life_item1_out(3)">
+        <div class="life-title">梦翔 Party</div>
+        <div class="life-text" style="background: linear-gradient(to top,#598d00,#a6ff0e);padding-top: 15%;">
+          听陈晓卿、许知远等影响力大咖谈天说地，听内部同事分享的工作生活的体验和感悟，在这个分享和交流的平台里，改变人生轨迹的灵光也许就此闪现。
+        </div>
+      </el-col>
+      <el-col :span="2"></el-col>
+    </el-row>
+    <el-row class="life" v-if="!isMobile">
+      <el-col :span="2"></el-col>
+      <el-col :span="10" class="life-item5" @mouseenter="life_item1_in(4)" @mouseleave="life_item1_out(4)">
+        <div class="life-title">假期生活</div>
+        <div class="life-text" style="background: linear-gradient(to top,red,pink);padding-top: 15%;">
+          听陈晓卿、许知远等影响力大咖谈天说地，听内部同事分享的工作生活的体验和感悟，在这个分享和交流的平台里，改变人生轨迹的灵光也许就此闪现。
+        </div>
+      </el-col>
+      <el-col :span="10" class="life-item6" @mouseenter="life_item1_in(5)" @mouseleave="life_item1_out(5)">
+        <div class="life-item6-video">
+          <video preload="auto" src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/add_us.mp4"
+            width="100%" height="100%" muted loop autoplay class="video"></video>
+        </div>
+        <div class="life-title">加入我们</div>
+        <div class="life-text" style="background: linear-gradient(to top,#c201f8,#eeb3ff);">
+          <NewTeamButton class="life-item6-btn" @click="ToLogin"></NewTeamButton>
+        </div>
+      </el-col>
+      <el-col :span="2"></el-col>
+    </el-row>
+
+    <!-- 移动端life -->
+    <el-row class="life" v-if="isMobile">
+      <el-col :span="24" class="life-item1" @mouseenter="life_item1_in(0)" @mouseleave="life_item1_out(0)">
+        <div class="life-title">人才有活水,组织有活力</div>
+        <div class="life-text" style="padding-top: 13vh ;">
+          腾讯的活水文化，可以让你在多个舞台挥洒激情、获得持续成长。腾讯多元的业务布局会给你提供丰富的发展机会，
+          所有工作机会都会对内部员工开放，只要工作满一年就可以自由申请内部转岗，
+          每年都有1000+的腾讯员工通过活水机制找到更适合自己的工作岗位。
+        </div>
+      </el-col>
+    </el-row>
+    <el-row class="life" v-if="isMobile">
+      <el-col :span="24" class="life-item2" @mouseenter="life_item1_in(1)" @mouseleave="life_item1_out(1)">
+        <div class="life-title">梦翔公社</div>
+        <div class="life-text" style="background: linear-gradient(to top,#0052d9,#02fae9); padding-top: 13vh">
+          鹅民公社是腾讯弹性福利平台，你可以在公社自选健康、学习成长和鹅厂特色类福利，
+          还可以向鹅民公社推荐你想要的福利，公社满足员工不同的个性化福利需求，
+          从此和千人一面的“福利”说拜拜。
+        </div>
+      </el-col>
+    </el-row>
+    <el-row class="life" v-if="isMobile">
+      <el-col :span="24" class="life-item3" @mouseenter="life_item1_in(2)" @mouseleave="life_item1_out(2)">
+        <div class="life-item3-bgc-1"></div>
+        <div class="life-item3-bgc-2"></div>
+        <div class="life-item3-bgc-3"></div>
+        <div class="life-title">MengXiang Talk</div>
+        <div class="life-text" style="background: linear-gradient(to top,#03576a,#02fae9);padding-top: 20%;">
+          听陈晓卿、许知远等影响力大咖谈天说地，听内部同事分享的工作生活的体验和感悟，在这个分享和交流的平台里，改变人生轨迹的灵光也许就此闪现。
+        </div>
+      </el-col>
+    </el-row>
+    <el-row class="life" v-if="isMobile">
+      <el-col :span="24" class="life-item4" @mouseenter="life_item1_in(3)" @mouseleave="life_item1_out(3)">
+        <div class="life-title">梦翔 Party</div>
+        <div class="life-text" style="background: linear-gradient(to top,#598d00,#a6ff0e);padding-top: 13vh;">
+          听陈晓卿、许知远等影响力大咖谈天说地，听内部同事分享的工作生活的体验和感悟，在这个分享和交流的平台里，改变人生轨迹的灵光也许就此闪现。
+        </div>
+      </el-col>
+    </el-row>
+    <el-row class="life" v-if="isMobile">
+      <el-col :span="24" class="life-item5" @mouseenter="life_item1_in(4)" @mouseleave="life_item1_out(4)">
+        <div class="life-title">假期生活</div>
+        <div class="life-text" style="background: linear-gradient(to top,red,pink);padding-top: 13vh;">
+          听陈晓卿、许知远等影响力大咖谈天说地，听内部同事分享的工作生活的体验和感悟，在这个分享和交流的平台里，改变人生轨迹的灵光也许就此闪现。
+        </div>
+      </el-col>
+    </el-row>
+    <el-row class="life" v-if="isMobile">
+      <el-col :span="24" class="life-item6" @mouseenter="life_item1_in(5)" @mouseleave="life_item1_out(5)">
+        <div class="life-item6-video">
+          <video src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/add_us.mp4" width="100%"
+            height="100%" muted loop autoplay class="video"></video>
+        </div>
+        <div class="life-title">加入我们</div>
+        <div class="life-text" style="background: linear-gradient(to top,#c201f8,#eeb3ff);">
+          <NewTeamButton class="life-item6-btn" @click="ToLogin" style="margin-left: 21vw;"></NewTeamButton>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row class="space"></el-row>
   </div>
 </template>
 
@@ -186,23 +380,35 @@ const life_item1_out = (index: number) => {
   src: url(../../assets/font/墨趣古风体.ttf);
 }
 
+.back {
+  position: fixed;
+  top: 4vh;
+  left: 1vh;
+  z-index: 1;
+}
+
+.Mobile_back {
+  top: 5vh;
+  left: 85vw;
+}
+
 .new_team {
-  /* min-height: 100vh; */
   width: 100vw;
   background-color: #f7f7f7;
 }
 
-.vedio_container {
-  height: 65vh;
+.video_container {
+  height: 85vh;
   width: 100vw;
 }
 
 .video {
-  object-fit: cover;
+  object-fit: fill;
 }
 
 .title {
   margin-top: 10vh;
+  margin-bottom: 5vh;
 }
 
 .title_text {
@@ -228,7 +434,6 @@ const life_item1_out = (index: number) => {
 }
 
 .content {
-  margin-top: 5vh;
   padding-bottom: 10vh;
 }
 
@@ -439,8 +644,11 @@ const life_item1_out = (index: number) => {
 }
 
 /* 社团活动板块 */
-.life {
+.life:nth-child(1) {
   margin-top: 5vh;
+}
+
+.life {
   height: 35vh;
   padding-bottom: 0;
 }
@@ -459,7 +667,7 @@ const life_item1_out = (index: number) => {
 .life-text {
   width: 100%;
   height: 100%;
-  opacity: 1;
+  opacity: 0;
   position: absolute;
   top: 100%;
   padding-left: 5%;
@@ -473,6 +681,7 @@ const life_item1_out = (index: number) => {
   z-index: 1;
 }
 
+/* 从底向上进入 */
 .life-text-in {
   opacity: 1;
   top: 0%;
@@ -488,9 +697,8 @@ const life_item1_out = (index: number) => {
   position: relative;
   width: 100%;
   height: 100%;
-  background: url(../../assets/login_bgc.jpg) no-repeat center;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/login_bgc.jpg') no-repeat center;
   background-size: 100% 100%;
-  transform-origin: bottom;
   overflow: hidden;
 }
 
@@ -510,9 +718,8 @@ const life_item1_out = (index: number) => {
   position: relative;
   width: 100%;
   height: 100%;
-  background: url(../../assets/main_pic1.jpg) no-repeat center;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic1.jpg') no-repeat center;
   background-size: 100% 100%;
-  transform-origin: bottom;
   overflow: hidden;
 }
 
@@ -524,6 +731,158 @@ const life_item1_out = (index: number) => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 169, 206, 0.5);
+  background-color: rgba(4, 142, 173, 0.6);
+}
+
+/* 第三个life */
+.life-item3 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.life-item3::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(6, 143, 134, 0.6);
+}
+
+.life-item3-bgc-1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic2.jpg') no-repeat center;
+  background-size: 100% 100%;
+  transition: 1s all;
+}
+
+.life-item3-bgc-2 {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic2.jpg') no-repeat center;
+  background-size: 100% 100%;
+  transition: 1s all;
+}
+
+.life-item3-bgc-3 {
+  position: absolute;
+  top: 200%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic1.jpg') no-repeat center;
+  background-size: 100% 100%;
+  transition: 1s all;
+}
+
+/* 第四个life */
+.life-item4 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic3.jpg') no-repeat center;
+  background-size: 100% 100%;
+  overflow: hidden;
+}
+
+.life-item4::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(121, 192, 0, 0.4);
+}
+
+/* 第五个life */
+.life-item5 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic2.jpg') no-repeat center;
+  background-size: 100% 100%;
+  overflow: hidden;
+}
+
+.life-item5::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(245, 126, 126, 0.4);
+}
+
+/* 第六个life */
+.life-item6 {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-size: 100% 100%;
+  overflow: hidden;
+}
+
+.life-item6::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(128, 8, 158, 0.35);
+}
+
+.life-item6-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.life-item6-btn {
+  margin-top: 10vh;
+  margin-left: 28vh;
+}
+
+.space {
+  height: 10vh;
+}
+
+/* 移动端适配 */
+.mobile-video-container {
+  height: 30vh;
+}
+
+.mobile-content-text {
+  flex-direction: column;
+  align-items: start;
+  gap: 24px;
+}
+
+.mobile-info-box {
+  width: 100%;
+}
+
+.mobile-life {
+  display: flex;
+  flex-direction: column;
+  height: 50vh;
 }
 </style>

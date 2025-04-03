@@ -1,9 +1,23 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-// 加载动画状态
+// 加载动画状态，默认不显示
 const loading = ref(true)
 
+// 定义方法用于控制加载动画的显示和隐藏
+const showLoading = () => {
+  loading.value = true
+}
+
+const hideLoading = () => {
+  loading.value = false
+}
+
+// 暴露方法给父组件使用
+defineExpose({
+  showLoading,
+  hideLoading
+})
 </script>
 
 <template>
@@ -65,9 +79,11 @@ const loading = ref(true)
   0% {
     opacity: 0.6;
   }
+
   50% {
     opacity: 1;
   }
+
   100% {
     opacity: 0.6;
   }

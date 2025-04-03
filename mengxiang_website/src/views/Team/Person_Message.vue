@@ -5,16 +5,16 @@ import 'vue-waterfall-plugin-next/dist/style.css'
 import { useGlobalStore } from '../../stores';
 import { ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import BackBtn from '@/components/BackBtn.vue';
 
 const drop_menu = ref('筛选信息');
 const drawer_data = ref({})
 const drawer = ref(false)
 
 const globalStore = useGlobalStore();
-// const isMobile = ref(globalStore.isMobile);
-const isMobile = ref(true);
-const avatar_boy = new URL('@/assets/default_avatar_boy.png', import.meta.url).href;
-const avatar_gril = new URL('@/assets/default_avatar_girl.png', import.meta.url).href;
+const isMobile = ref(globalStore.isMobile);
+const avatar_boy = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_boy.png'
+const avatar_gril = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_girl.png'
 const waterfallSettings = ref({
   gap: 30,
   useObserve: true,
@@ -223,7 +223,7 @@ const freshmanMembers = ref([
 
 const back = () => {
   globalStore.setBackto_enum(true)
-  window.history.back();
+  window.history.back()
 }
 
 const click = (num: number) => {
@@ -238,26 +238,50 @@ const click = (num: number) => {
   }
 }
 
-const copy = (num: number, event: MouseEvent) => {
+const copy = async (num: number, event: MouseEvent) => {
   event.stopPropagation();
-  // 获取点击卡片的电话号码并复制到剪贴板
   const tel = freshmanMembers.value[num].tel;
-  navigator.clipboard.writeText(tel)
-    .then(() => {
-      ElMessage({
-        message: `已复制电话号码：${tel}`,
-        type: 'success',
-        duration: 2000
-      });
-    })
-    .catch(err => {
-      console.error('复制失败:', err);
-      ElMessage({
-        message: '复制失败，请手动复制',
-        type: 'error',
-        duration: 2000
-      });
+
+  try {
+    // 方法1：优先使用现代API
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(tel);
+    }
+    // 方法2：降级方案（兼容移动端）
+    else {
+      const textarea = document.createElement('textarea');
+      textarea.value = tel;
+      textarea.style.position = 'fixed';  // 防止页面滚动
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      // 兼容iOS
+      if (navigator.userAgent.match(/ipad|iphone/i)) {
+        const range = document.createRange();
+        range.selectNodeContents(textarea);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        textarea.setSelectionRange(0, 999999);
+      }
+
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+
+    ElMessage({
+      message: `已复制电话号码：${tel}`,
+      type: 'success',
+      duration: 2000
     });
+  } catch (err) {
+    console.error('复制失败:', err);
+    ElMessage({
+      message: '复制失败，请手动长按号码复制',
+      type: 'error',
+      duration: 2000
+    });
+  }
 }
 
 const expand = (num: number) => {
@@ -268,7 +292,7 @@ const expand = (num: number) => {
 
 <template>
   <div class="back" :class="{ Mobile_back: isMobile }">
-    <img src="../../assets/back.png" style="width: 5vw;" @click="back" :class="{ Mobile_back_img: isMobile }">
+    <BackBtn @click="back"></BackBtn>
   </div>
   <div class="drop_menu">
     <el-dropdown>
@@ -292,19 +316,19 @@ const expand = (num: number) => {
     <Waterfall :list="freshmanMembers" :breakpoints="waterfallSettings.breakpoints"
       :background-color="waterfallSettings.bgc" :gutter="waterfallSettings.gap">
       <template #default="{ item, index }">
-        <div class="card" @click="expand(index)">
+        <div :class="{ 'card': !isMobile }" class="card_all" @click="expand(index)">
           <div class="avatar">
             <LazyImg :url="item.avatar ? item.avatar : item.gender === '男' ? avatar_boy : avatar_gril" class="pic">
             </LazyImg>
           </div>
           <div class="info">
             <h2><i class="iconfont icon-mingziname" style="font-size: 30px; margin-right: 10px;color: skyblue;"></i> {{
-    item.name }}
+              item.name }}
             </h2>
             <p><i class="iconfont icon-xingbie" style="color: chocolate; margin-right: 10px"></i> {{ item.grade }}</p>
             <p><i class="iconfont icon-nianji" style="margin-right: 10px"></i> {{ item.school }}</p>
             <p class="tel-info"><i class="iconfont icon-lianxi" style="color: gray;margin-right: 10px"></i> {{ item.tel
-              }} <span class="copy-hint" @click="copy(index, $event)">(点击复制)</span></p>
+            }} <span class="copy-hint" @click="copy(index, $event)">(复制)</span></p>
             <p><i class="iconfont icon-a-01" style="color: blue;margin-right: 6px"></i> {{ item.motto }}</p>
           </div>
         </div>
@@ -353,7 +377,7 @@ const expand = (num: number) => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: url('../../assets/PersonMessage_bgc.png') no-repeat center;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/PersonMessage_bgc.png') no-repeat center;
   background-size: cover;
 }
 
@@ -398,7 +422,7 @@ const expand = (num: number) => {
   padding-top: 5vh;
 }
 
-.card {
+.card_all {
   display: flex;
   perspective: 500px;
   transform-style: preserve-3d;
@@ -407,6 +431,19 @@ const expand = (num: number) => {
   border-radius: 10px;
   overflow: hidden;
   transition: transform 0.3s ease-in-out;
+}
+
+@media (hover:hover) and (pointer:fine) {
+  .card:hover {
+    transform: scale(1.15);
+  }
+}
+
+@media (hover:none) and (pointer:coarse) {
+  .card:hover {
+    perspective: none;
+    transform-style: flat;
+  }
 }
 
 .card:hover {
@@ -471,7 +508,8 @@ const expand = (num: number) => {
 
 /* 移动端样式调整 */
 .Mobile_back {
-  top: 6vh;
+  top: 5vh;
+  left: 0;
 }
 
 .Mobile_back_img {
