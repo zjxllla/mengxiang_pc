@@ -1,11 +1,11 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4870560 */
-  src: url('iconfont.eot?t=1744107585494'); /* IE9 */
-  src: url('iconfont.eot?t=1744107585494#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('iconfont.woff2?t=1744107585494') format('woff2'),
-       url('iconfont.woff?t=1744107585494') format('woff'),
-       url('iconfont.ttf?t=1744107585494') format('truetype'),
-       url('iconfont.svg?t=1744107585494#iconfont') format('svg');
+  src: url('iconfont.eot?t=1744189308534'); /* IE9 */
+  src: url('iconfont.eot?t=1744189308534#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1744189308534') format('woff2'),
+       url('iconfont.woff?t=1744189308534') format('woff'),
+       url('iconfont.ttf?t=1744189308534') format('truetype'),
+       url('iconfont.svg?t=1744189308534#iconfont') format('svg');
 }
 
 .iconfont {
@@ -14,6 +14,10 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-dianzan-aixinshixin:before {
+  content: "\e60a";
 }
 
 .icon-pinglun:before {

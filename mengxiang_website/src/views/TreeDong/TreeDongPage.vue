@@ -13,6 +13,7 @@ const praise_num = ref(0)
 const is_praise = ref(false)
 const is_commment = ref(false)
 const visible_list = ref<string[]>([])
+const drawer = ref(true);
 
 onBeforeMount(async () => {
   // 获取一言
@@ -64,13 +65,18 @@ const to_white = () => {
     isAnimating_dark.value = false;
   }, 1000);
 }
-const onPraise = () => {
-  is_praise.value = true
-  praise_num.value++
+const onPraise = (praise: boolean) => {
+  if (praise) {
+    is_praise.value = false
+    praise_num.value--
+  } else {
+    is_praise.value = true
+    praise_num.value++
+  }
 }
-const unPraise = () => {
-  is_praise.value = false
-  praise_num.value--
+
+const onOrginal = () => {
+  drawer.value = true
 }
 </script>
 
@@ -136,14 +142,14 @@ const unPraise = () => {
           </div>
           <div class="card-bottom">
             <div class="bottom-icons">
-              <div class="praise" v-if="!is_praise" @click="onPraise">
+              <div class="praise" v-if="!is_praise" @click="onPraise(false)">
                 <i class="iconfont icon-dianzan"></i> 点赞
               </div>
-              <div class="praise" v-if="is_praise" @click="unPraise">
+              <div class="praise" v-if="is_praise" @click="onPraise(true)">
                 <i class="iconfont icon-dianzan" style="font-weight: 700;transition: all 1.5s;"
                   :style="{ color: isDark_animation ? 'skyblue' : 'blue' }"></i> {{ praise_num }}
               </div>
-              <div class="original-text">
+              <div class="original-text" @click="onOrginal">
                 <i class="iconfont icon-yuanwenlianjie" style="font-size: 12px;font-weight: 200;"></i> &nbsp;原文
               </div>
               <div class="comment" @click="is_commment = !is_commment">
@@ -197,10 +203,55 @@ const unPraise = () => {
       </el-col>
       <el-col :span="2"></el-col>
     </el-row>
+
+    <!-- 原文抽屉 -->
+    <el-drawer v-model="drawer" :with-header="false" :style="{ background: isDark_animation ? '#1f2937' : '#ebf0f6' }">
+      <div class="drawer">
+        <div class="drawer-top">
+          <div class="drawer-top-avatar">
+            <img src="../../assets/main_pic1.jpg" alt=""
+              style="width: 100%;height: 100%;object-fit: fill; border-radius: 15%;">
+          </div>
+          <div class="drawer-top-name">匿名</div>
+          <div class="drawer-top-time" :style="{ color: isDark_animation ? '#ccd0db' : '#4b5563' }">20小时前</div>
+          <div class="drawer-top-love" @click="onPraise(is_praise)">
+            <i class="iconfont icon-dianzan-aixinshixin" style="font-size: 30px;"
+              :style="{ color: is_praise ? 'red' : 'gray' }"></i>
+          </div>
+        </div>
+        <div class="drawer-body">
+          <div class="drawer-body-title" :style="{ color: isDark_animation ? '#b4c6fa' : '#0866fe' }">@我此刻说一大堆也不知道要表达什么
+          </div>
+          <div class="drawer-body-text">
+            树洞君，今天都在讨论跨年！是啊，又一年过去了，一到年底负能量爆棚啦！25岁啦，年纪不小了！可是回头分析一看，工作上：工资那么少，专业技能掌握的也不是太熟练，竟然面临着辞职的风险。爱情上：今年谈了两段感情
+            ，都是异地恋，第一个离开的很是坚决，第二个断断续续的联系，人真的不能太好吗？一心一意的对待，给人的感觉是盲目，所有离开的人，都在离开前给我发那么一张好人卡，我听够了你很好，但我觉得我们不合适这句话。家庭上：爸爸妈妈年纪越来越大了，可我还支撑不了这个家，我现在还是没办法让他们过上不用上班的日子，家里的压力也那么大。回头看看2015，我到底又做了些什么？难道我就那么笨吗？学不会这社会的游戏，获得不了一些好的结果吗？
+          </div>
+        </div>
+        <div class="drawer-bottom">
+          <div class="drawer-bottom-title">评论列表</div>
+          <div class="drawer-comment-card">
+            <div class="drawer-comment-avatar">
+              <img src="../../assets/main_pic2.jpg" alt=""
+                style="width: 100%;height: 100%;object-fit: fill; border-radius: 50% 50% 10% 50%;">
+            </div>
+            <div class="drawer-comment-context" :style="{ background: isDark_animation ? '#374151' : '#fff' }">
+              <div class="drawer-context-title">
+                <div class="drawer-context-name">张三</div>
+                <div class="drawer-context-time" :style="{ color: isDark_animation ? '#ccd0db' : '#4b5563' }">1小时前</div>
+              </div>
+              <div class="drawer-context-text">
+                每一步成长都值得肯定！你已经在接纳自我和踏实行动的路上。大脑需要重启期，每天专注一个小目标（比如学习15分钟），积累就是力量。焦虑的反面是具体——把‘想做的事’拆解成‘今天能做的事’，你会发现自己比想象中更强大。慢慢来，但别停下，你值得被自己温柔以待
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
 <style scoped>
+/* #region */
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.5s ease-in-out;
@@ -220,7 +271,6 @@ const unPraise = () => {
   opacity: 1;
 }
 
-/* #region */
 .body {
   position: fixed;
   top: 0;
@@ -453,7 +503,6 @@ const unPraise = () => {
   padding-bottom: 2vh;
 }
 
-/* #endregion */
 .praise,
 .original-text,
 .comment {
@@ -556,7 +605,8 @@ const unPraise = () => {
 }
 
 .aside-card2 {
-  position: relative;
+  position: sticky;
+  top:44vh;
   width: 80%;
   min-height: 30vh;
   border-radius: 20px;
@@ -617,5 +667,119 @@ const unPraise = () => {
   line-height: 130%;
   letter-spacing: 0;
   transition: all 1.5s;
+}
+
+/* #endregion */
+.drawer-top {
+  position: relative;
+  width: 100%;
+}
+
+.drawer-top-avatar {
+  width: 70px;
+  height: 70px;
+}
+
+.drawer-top-name {
+  position: absolute;
+  top: 5px;
+  left: 80px;
+}
+
+.drawer-top-time {
+  position: absolute;
+  font-size: 14px;
+  color: #4b5563;
+  top: 50px;
+  left: 80px;
+}
+
+.drawer-top-love {
+  position: absolute;
+  top: 20px;
+  right: 2vw;
+}
+
+.drawer-body-title {
+  width: 100%;
+  margin-top: 4vh;
+  padding-bottom: 3vh;
+  margin-bottom: 3vh;
+  border-bottom: 1px solid #dddddd;
+}
+
+.drawer-body-text {
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.drawer-bottom {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 4vh;
+  padding-top: 3vh;
+  border-top: 1px solid #dddddd;
+}
+.drawer-bottom-title{
+  margin-bottom: 3vh;
+  font-weight: 700;
+}
+.drawer-comment-card {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  gap: 2vw;
+  width: 100%;
+  min-height: 15vh;
+  padding-top: 2vh;
+  padding-bottom: 2vh;
+}
+
+.drawer-comment-avatar {
+  position: absolute;
+  width: 10%;
+  left: 0.3vw;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+}
+
+.drawer-comment-context {
+  width: 87%;
+  margin-left: 13%;
+  background-color: pink;
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.drawer-context-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-top: 1vh;
+  padding-left: 0.5vw;
+  padding-right: 0.5vw;
+  padding-bottom: 1vh;
+  border-bottom: 1px solid #dddddd;
+}
+
+.drawer-context-name {
+  font-size: 15px;
+}
+
+.drawer-context-time {
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.drawer-context-text {
+  padding-left: 0.5vw;
+  padding-right: 0.5vw;
+  margin-top: 1vh;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #999;
+  padding-bottom: 1vh;
 }
 </style>
