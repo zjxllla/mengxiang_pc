@@ -2,7 +2,11 @@
 import { Moon, Sunny } from '@element-plus/icons-vue';
 import { ref, onBeforeMount, onMounted } from 'vue';
 import axios from 'axios';
+import BackBtn from '@/components/BackBtn.vue';
+import { useGlobalStore } from '../../stores'
 
+
+const globalStore = useGlobalStore();
 const observer = ref<IntersectionObserver | null>(null)
 const isDark = ref(false);
 const top_text = ref('')
@@ -13,7 +17,7 @@ const praise_num = ref(0)
 const is_praise = ref(false)
 const is_commment = ref(false)
 const visible_list = ref<string[]>([])
-const drawer = ref(true);
+const drawer = ref(false);
 
 onBeforeMount(async () => {
   // 获取一言
@@ -78,6 +82,10 @@ const onPraise = (praise: boolean) => {
 const onOrginal = () => {
   drawer.value = true
 }
+const back = () => {
+  globalStore.setBackto_enum(true)
+  window.history.back()
+}
 </script>
 
 <template>
@@ -116,6 +124,7 @@ const onOrginal = () => {
             <Moon style="width: 2vw;color: black;margin: 1vh; transition: all 1.5s;"
               :style="{ opacity: isDark_animation ? 1 : 0 }" />
           </div>
+          <BackBtn @click="back" :color="isDark_animation ? 'yellow' : 'black'"></BackBtn>
         </div>
       </el-col>
       <el-col :span="1"></el-col>
@@ -133,7 +142,7 @@ const onOrginal = () => {
             </div>
           </div>
           <div class="card-body">
-            <div class="body-link"><a href="#"
+            <div class="body-link" @click="drawer = true"><a href="#"
                 :style="{ color: isDark_animation ? '#b4c6fa' : '#0866fe' }">@我此刻说一大堆也不知道要表达什么</a></div>
             <div class="body-text" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }">
               树洞君，今天都在讨论跨年！是啊，又一年过去了，一到年底负能量爆棚啦！25岁啦，年纪不小了！可是回头分析一看，工作上：工资那么少，专业技能掌握的也不是太熟练，竟然面临着辞职的风险。爱情上：今年谈了两段感情
@@ -182,7 +191,7 @@ const onOrginal = () => {
             <div class="card1-avatar" :style="{ 'border-color': isDark_animation ? '#374151' : '#fff' }"></div>
           </div>
           <div class="aside-card1-bottom">
-            <div class="card1-bottom-name" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }">张三</div>
+            <div class="card1-bottom-name" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }">匿名</div>
             <div class="card1-bottom-text" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }">
               这是放用户座右铭的地方测试文本测试文本测试文本测试文本</div>
           </div>
@@ -205,7 +214,8 @@ const onOrginal = () => {
     </el-row>
 
     <!-- 原文抽屉 -->
-    <el-drawer v-model="drawer" :with-header="false" :style="{ background: isDark_animation ? '#1f2937' : '#ebf0f6' }">
+    <el-drawer v-model="drawer" :with-header="false" :style="{ background: isDark_animation ? '#1f2937' : '#ebf0f6' }"
+      size="40%">
       <div class="drawer">
         <div class="drawer-top">
           <div class="drawer-top-avatar">
@@ -227,6 +237,17 @@ const onOrginal = () => {
             ，都是异地恋，第一个离开的很是坚决，第二个断断续续的联系，人真的不能太好吗？一心一意的对待，给人的感觉是盲目，所有离开的人，都在离开前给我发那么一张好人卡，我听够了你很好，但我觉得我们不合适这句话。家庭上：爸爸妈妈年纪越来越大了，可我还支撑不了这个家，我现在还是没办法让他们过上不用上班的日子，家里的压力也那么大。回头看看2015，我到底又做了些什么？难道我就那么笨吗？学不会这社会的游戏，获得不了一些好的结果吗？
           </div>
         </div>
+        <div class="drawer-send-comment">
+          <div class="drawer-send-comment-title">发表评论</div>
+          <div class="comment-place">
+            <textarea type="text" style="min-height: 20vh;width: 100%;" class="comment-textarea"
+              placeholder="这里书写你的评论"></textarea>
+            <div class="comment-buttons" style="justify-content: center;">
+              <el-button round type="primary" style="width: 20vw;">提交</el-button>
+            </div>
+          </div>
+        </div>
+
         <div class="drawer-bottom">
           <div class="drawer-bottom-title">评论列表</div>
           <div class="drawer-comment-card">
@@ -359,8 +380,16 @@ const onOrginal = () => {
   margin-left: 10px;
 }
 
-
 .to-black {
+  display: flex;
+  gap: 1vw;
+  justify-items: center;
+  align-items: center;
+  width: 8vw;
+}
+
+.top-sun,
+.top-dark {
   position: relative;
   width: 3vw;
   height: 3vw;
@@ -371,6 +400,8 @@ const onOrginal = () => {
 .top-sun::before {
   position: absolute;
   content: '';
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   border-radius: 50%;
@@ -380,6 +411,8 @@ const onOrginal = () => {
 
 .top-sun-animation::before {
   position: absolute;
+  top: 0;
+  left: 0;
   content: '';
   width: 100%;
   height: 100%;
@@ -513,7 +546,6 @@ const onOrginal = () => {
   width: 100%;
   border-radius: 10px;
   transition: all 0.5s ease;
-  overflow: hidden;
 }
 
 .comment-textarea {
@@ -606,7 +638,7 @@ const onOrginal = () => {
 
 .aside-card2 {
   position: sticky;
-  top:44vh;
+  top: 44vh;
   width: 80%;
   min-height: 30vh;
   border-radius: 20px;
@@ -713,6 +745,17 @@ const onOrginal = () => {
   line-height: 1.8;
 }
 
+.drawer-send-comment {
+  padding-top: 5vh;
+}
+
+.drawer-send-comment-title {
+  font-weight: 700;
+  margin-bottom: 3vh;
+  padding-top: 2vh;
+  border-top: 1px solid #dddddd;
+}
+
 .drawer-bottom {
   display: flex;
   flex-direction: column;
@@ -721,10 +764,12 @@ const onOrginal = () => {
   padding-top: 3vh;
   border-top: 1px solid #dddddd;
 }
-.drawer-bottom-title{
+
+.drawer-bottom-title {
   margin-bottom: 3vh;
   font-weight: 700;
 }
+
 .drawer-comment-card {
   position: relative;
   display: flex;
