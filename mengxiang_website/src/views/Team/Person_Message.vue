@@ -7,12 +7,12 @@ import { ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import BackBtn from '@/components/BackBtn.vue';
 
-const drop_menu = ref('筛选信息');
 const drawer_data = ref({})
 const drawer = ref(false)
 
 const globalStore = useGlobalStore();
 const isMobile = ref(globalStore.isMobile);
+const drop_menu = ref(isMobile.value ? '筛选' : '筛选信息');
 const avatar_boy = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_boy.png'
 const avatar_gril = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_girl.png'
 const waterfallSettings = ref({
@@ -226,15 +226,10 @@ const back = () => {
   window.history.back()
 }
 
-const click = (num: number) => {
-  if (num === 0) {
-    drop_menu.value = '大一';
-  } else if (num === 1) {
-    drop_menu.value = '大二';
-  } else if (num === 2) {
-    drop_menu.value = '大三';
-  } else if (num === 3) {
-    drop_menu.value = '全部';
+const click = (event: Event) => {
+  const label = (event.target as HTMLLabelElement).textContent?.trim();
+  if (label) {
+    drop_menu.value = label;
   }
 }
 
@@ -301,10 +296,10 @@ const expand = (num: number) => {
       </span>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item @click="click(0)" divided>大一</el-dropdown-item>
-          <el-dropdown-item @click="click(1)" divided>大二</el-dropdown-item>
-          <el-dropdown-item @click="click(2)" divided>大三</el-dropdown-item>
-          <el-dropdown-item @click="click(3)" divided>全部</el-dropdown-item>
+          <el-dropdown-item @click="click($event)" divided>22级</el-dropdown-item>
+          <el-dropdown-item @click="click($event)" divided>23级</el-dropdown-item>
+          <el-dropdown-item @click="click($event)" divided>24级</el-dropdown-item>
+          <el-dropdown-item @click="click($event)" divided>全部</el-dropdown-item>
         </el-dropdown-menu>
       </template>
     </el-dropdown>
@@ -328,7 +323,7 @@ const expand = (num: number) => {
             <p><i class="iconfont icon-xingbie" style="color: chocolate; margin-right: 10px"></i> {{ item.grade }}</p>
             <p><i class="iconfont icon-nianji" style="margin-right: 10px"></i> {{ item.school }}</p>
             <p class="tel-info"><i class="iconfont icon-lianxi" style="color: gray;margin-right: 10px"></i> {{ item.tel
-            }} <span class="copy-hint" @click="copy(index, $event)">(复制)</span></p>
+              }} <span class="copy-hint" @click="copy(index, $event)">(复制)</span></p>
             <p><i class="iconfont icon-a-01" style="color: blue;margin-right: 6px"></i> {{ item.motto }}</p>
           </div>
         </div>
@@ -415,7 +410,12 @@ const expand = (num: number) => {
   font-weight: 700;
   font-size: 20px
 }
-
+.el-dropdown-link {
+display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
 .waterfall_container {
   margin-left: 7vw;
   margin-right: 7vw;

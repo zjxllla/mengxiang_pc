@@ -4,8 +4,15 @@ import NewTeamButton from '../../components/NewTeamButton.vue'
 import { useGlobalStore } from '../../stores'
 import BackBtn from '@/components/BackBtn.vue';
 
+// 检测是否在微信浏览器中
+const isWeixinBrowser = () => {
+  const ua = navigator.userAgent.toLowerCase()
+  return /micromessenger/.test(ua)
+}
+
 const observe = ref<IntersectionObserver | null>(null)
-const vedio_ref = ref<HTMLVideoElement | null>(null)
+const video_ref = ref<HTMLVideoElement | null>(null)
+const video_ref2 = ref<HTMLVideoElement | null>(null)
 const life_item3_timer = ref(0)
 const count = ref(0)
 const globalStore = useGlobalStore()
@@ -13,8 +20,41 @@ const isMobile = ref(globalStore.isMobile)
 const listen_count = ref(0)
 onMounted(() => {
   // 设置视频倍速
-  if (vedio_ref.value) {
-    (vedio_ref.value as HTMLVideoElement).playbackRate = 0.75
+  if (video_ref.value || video_ref2.value) {
+    (video_ref.value as HTMLVideoElement).playbackRate = 0.75
+
+    // 针对微信浏览器的特殊处理
+    if (isWeixinBrowser()) {
+      // 安全地检查WeixinJSBridge是否存在
+      if (!((window as Window & typeof globalThis & { WeixinJSBridge?: unknown }).WeixinJSBridge)) {
+        try {
+          document.addEventListener('WeixinJSBridgeReady', () => {
+            video_ref.value?.play()
+            video_ref2.value?.play()
+            // 获取所有视频元素并尝试播放
+            document.querySelectorAll('video').forEach(video => {
+              video.play().catch(err => console.warn('视频播放失败:', err))
+            })
+          }, false)
+        } catch (error) {
+          console.warn('微信JSBridge事件监听失败:', error)
+          // 尝试直接播放视频
+          video_ref.value?.play().catch(err => console.warn('视频播放失败:', err))
+          video_ref2.value?.play().catch(err => console.warn('视频播放失败:', err))
+        }
+      } else {
+        video_ref.value?.play().catch(err => console.warn('视频播放失败:', err))
+        video_ref2.value?.play().catch(err => console.warn('视频播放失败:', err))
+        // 获取所有视频元素并尝试播放
+        document.querySelectorAll('video').forEach(video => {
+          video.play().catch(err => console.warn('视频播放失败:', err))
+        })
+      }
+    } else {
+      // 非微信浏览器环境，正常播放
+      video_ref.value?.play().catch(err => console.warn('视频播放失败:', err))
+      video_ref2.value?.play().catch(err => console.warn('视频播放失败:', err))
+    }
   }
   // 开启轮播背景
   life_item_bgc_change()
@@ -179,8 +219,11 @@ const ToLogin = () => {
   <div class="new_team">
     <el-row>
       <el-col :span="24" class="video_container" :class="{ 'mobile-video-container': isMobile }">
-        <video src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/mengxiang.mp4" width="100%"
-          height="100%" muted loop autoplay class="video" ref="vedio_ref"></video>
+        <video src="../../assets/mengxiang.mp4" width="100%" height="100%" muted loop autoplay playsinline
+          webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true" class="video"
+          ref="video_ref"
+          poster="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/mengxiang_poster.jpg"
+          @click="(event) => (event.target as HTMLVideoElement).play()"></video>
       </el-col>
     </el-row>
     <el-row class="title">
@@ -294,8 +337,11 @@ const ToLogin = () => {
       </el-col>
       <el-col :span="10" class="life-item6" @mouseenter="life_item1_in(5)" @mouseleave="life_item1_out(5)">
         <div class="life-item6-video">
-          <video preload="auto" src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/add_us.mp4"
-            width="100%" height="100%" muted loop autoplay class="video"></video>
+          <video preload="auto" src="../../assets/add_us.mp4" width="100%" height="100%" muted loop autoplay playsinline
+            webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true" class="video"
+            ref="video_ref2"
+            poster="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/add_us_poster.jpg"
+            @click="(event) => (event.target as HTMLVideoElement).play()"></video>
         </div>
         <div class="life-title">加入我们</div>
         <div class="life-text" style="background: linear-gradient(to top,#c201f8,#eeb3ff);">
@@ -356,8 +402,10 @@ const ToLogin = () => {
     <el-row class="life" v-if="isMobile">
       <el-col :span="24" class="life-item6" @mouseenter="life_item1_in(5)" @mouseleave="life_item1_out(5)">
         <div class="life-item6-video">
-          <video src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/add_us.mp4" width="100%"
-            height="100%" muted loop autoplay class="video"></video>
+          <video src="../../assets/add_us.mp4" width="100%" height="100%" muted loop autoplay playsinline
+            webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true" class="video"
+            poster="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/add_us_poster.jpg"
+            @click="(event) => (event.target as HTMLVideoElement).play()"></video>
         </div>
         <div class="life-title">加入我们</div>
         <div class="life-text" style="background: linear-gradient(to top,#c201f8,#eeb3ff);">

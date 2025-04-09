@@ -7,7 +7,7 @@ const globalStore = useGlobalStore()
 const back_enum = globalStore.getBackto_enum()
 const containerRef = ref<HTMLElement | null>(null)
 const currentIndex = ref([0])
-const sections = ['#part1', '#part2', '#part3']
+const sections = ['#part1', '#part2', '#part3', '#part4']
 const delta = ref(0)
 let isScrolling = false
 const ifShow = ref(false)
@@ -251,36 +251,114 @@ const mouseleave_link = (num: number) => {
                   <div class="section_title" :class="{ 'mobile_second_title': isMobile }">关于我们</div>
                   <div class="line" :class="{ 'mobile-line': isMobile }"></div>
                   <div class="content" :class="{ 'mobile-content': isMobile }">
-                    梦翔工作室成立于2007年，至今已经历了13年的成长。社团一直秉承"自强不息"的理念，不断提高，努力创新。
-                    梦翔社团自成立以来，紧跟软件发展方向，及时转变学习方向，让走出去的学生都能很快找到适合的就业岗位。
-                    梦翔社团有博学强识的带队老师，有认真负责的学长学姐，在这里你可以体会到家一般的温馨和睦。
-                    社团还拥有严格的管理制度，毕竟无规矩不成方圆，有制度的约束才可以让我们更好的成长；
-                    社团紧跟市场的要求技术，确立了人工智能，前端，小程序，嵌入式等系统学习研究的发展方向，现已成为web应用方向主力社团之一。
-                    梦翔人自强不息，先后承接并完成项目三十余项，并在各种比赛中赢得了诸多荣誉。我们的脚步从未停息...
+                    <div class="box" :class="{ 'mobile-box': isMobile }">
+                      <img src="../../assets/main_box1.png" alt="" class="box_img"
+                        :class="{ 'mobile-box-img': isMobile }">
+                      <div class="box_title">社团简介与理念</div>
+                      <div class="box_content">梦翔工作室成立于2007年，至今已经历了13年的成长。社团一直秉承“自强不息”的理念，不断提高，努力创新。</div>
+                    </div>
+                    <div class="box" :class="{ 'mobile-box': isMobile }">
+                      <img src="../../assets/main_box2.png" alt="" class="box_img"
+                        :class="{ 'mobile-box-img': isMobile }">
+                      <div class="box_title">师资与管理制度</div>
+                      <div class="box_content">
+                        梦翔社团有博学强识的带队老师，有认真负责的学长学姐，在这里你可以体会到家一般的温馨和睦。社团还拥有严格的管理制度，毕竟无规矩不成方圆，有制度的约束才可以让我们更好地成长。</div>
+                    </div>
+                    <div class="box" :class="{ 'mobile-box': isMobile }">
+                      <img src="../../assets/main_box3.png" alt="" class="box_img"
+                        :class="{ 'mobile-box-img': isMobile }">
+                      <div class="box_title">发展方向与成就</div>
+                      <div class="box_content">
+                        梦翔社团自成立以来，紧跟软件发展方向，及时转变学习方向，紧跟市场的要求技术，确立了人工智能、前端、小程序、嵌入式等系统学习研究的发展方向，现已成为web应用方向主力社团之一。
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div v-if="isMobile"><img src="../../assets/bottom.png" alt="" width="30px"
                     style="position: absolute;bottom: 0;left: 45vw;"></div>
               </div>
             </div>
-            <div id="part3" class="scroll-section" :class="{ active: currentIndex.includes(2) }" style="height: 100vh">
+            <div id="part3" class="scroll-section"
+              :class="{ active: currentIndex.includes(2) || currentIndex.includes(3) }" style="height: 100vh">
               <!-- 确保每个部分的高度不超过视口 -->
-              <div class="award">
-                <div class="context">
-                  <div class="section_title" :class="{ 'mobile_second_title': isMobile }">奖项展示</div>
-                  <div class="line" :class="{ 'mobile-line': isMobile }"></div>
+              <div class="award" style="display: flex;flex-direction: column;">
+                <div class="context" :style="{'padding-bottom':isMobile?'3vh':'5vh'}">
+                  <div class="section_title" :class="{ 'mobile_second_title': isMobile }">我们的优势</div>
+                  <div class="line" :class="{ 'mobile-line': isMobile }"
+                    style="margin: 3vh auto;border: 2px solid #deb13d;"></div>
                   <div class="content"
-                    style="display: flex; justify-content: center; align-items: center; height: 100%">
-                    <el-carousel :interval="4000" :type="isMobile ? '' : 'card'" :height="isMobile ? '40vh' : '50vh'"
-                      class="pictures" :style="isMobile ? 'width: 90vw' : 'width: 70vw'">
-                      <el-carousel-item v-for="item in 6" :key="item">
-                        <img src='https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/lk.jpg'
-                          alt="图片" style="width: 100%;" />
+                    style="display: flex; justify-content: center; align-items: center; height: 100%;margin-top: 0;overflow: hidden;">
+                    <el-carousel indicator-position="outside" :interval="5000" :height="isMobile ? '20vh' : '40vh'"
+                      :style="isMobile ? 'width:80vw' : 'width:70vw'">
+                      <el-carousel-item v-for="item in 4" :key="item">
+                        <img src="../../assets/main_pic1.jpg" alt=""
+                          style="width: 100%;height: 100%; object-fit: fill;">
                       </el-carousel-item>
                     </el-carousel>
                   </div>
                 </div>
+                <div class="part3-bottom" :class="{'mobile-part3-bottom':isMobile}">
+                  <div class="part3-box" :class="{'mobile-part3-box':isMobile}">
+                    <div class="part3-icon" :style="{width:isMobile?'10vw':'5vw',height:isMobile?'10vw':'5vw'}">
+                      <img src="../../assets/part3-icon2.png" alt="" class="part3-icon-img"
+                        :class="{'mobile-part3-icon-img':isMobile}">
+                    </div>
+                    <div class="part3-title" :style="{top:isMobile?'6vh':'12vh'}">专业紧跟市场</div>
+                    <div class="part3-context" :style="{ top: isMobile ? '8vh' : '15vh' }">紧跟软件方向，及时调整学习内容，助力学生就业。</div>
+                  </div>
+                  <div class="part3-box" :class="{ 'mobile-part3-box': isMobile }">
+                    <div class="part3-icon"
+                      :style="{ width: isMobile ? '10vw' : '5vw', height: isMobile ? '10vw' : '5vw' }">
+                      <img src="../../assets/part3-icon3.png" alt="" class="part3-icon-img"
+                        :class="{ 'mobile-part3-icon-img': isMobile }">
+                    </div>
+                    <div class="part3-title" :style="{ top: isMobile ? '6vh' : '12vh' }">师资力量雄厚</div>
+                    <div class="part3-context" :style="{ top: isMobile ? '8vh' : '15vh' }">有博学强识的老师和认真负责的学长学姐。</div>
+                  </div>
+                  <div class="part3-box" :class="{ 'mobile-part3-box': isMobile }">
+                    <div class="part3-icon"
+                      :style="{ width: isMobile ? '10vw' : '5vw', height: isMobile ? '10vw' : '5vw' }">
+                      <img src="../../assets/part3-icon4.png" alt="" class="part3-icon-img"
+                        :class="{ 'mobile-part3-icon-img': isMobile }">
+                    </div>
+                    <div class="part3-title" :style="{ top: isMobile ? '6vh' : '12vh' }">温馨和睦氛围</div>
+                    <div class="part3-context" :style="{ top: isMobile ? '8vh' : '15vh' }">社团氛围如家般温馨，成员关系和睦。</div>
+                  </div>
+                  <div class="part3-box" :class="{ 'mobile-part3-box': isMobile }">
+                    <div class="part3-icon"
+                      :style="{ width: isMobile ? '10vw' : '5vw', height: isMobile ? '10vw' : '5vw' }">
+                      <img src="../../assets/part3-icon1.png" alt="" class="part3-icon-img"
+                        :class="{ 'mobile-part3-icon-img': isMobile }">
+                    </div>
+                    <div class="part3-title" :style="{ top: isMobile ? '6vh' : '12vh' }">实践成果丰硕</div>
+                    <div class="part3-context" :style="{ top: isMobile ? '8vh' : '15vh' }">承接30余个项目，多次获奖，成绩突出。</div>
+                  </div>
+                </div>
               </div>
+            </div>
+            <div id="part4" class="scroll-section" :class="{ active: currentIndex.includes(3) }" style="height: 30vh;">
+              <el-row>
+                <el-col :span="24">
+                  <div class="main-bottom">
+                    <div class="bottom-box">
+                      <div class="bottom-title">关于我们</div>
+                      <div class="bottom-content">梦翔工作室成立于2018年，是一家专注 于数字创意与技术创新的优秀团队。</div>
+                    </div>
+                    <div class="bottom-box">
+                      <div class="bottom-title">联系我们</div>
+                      <div class="bottom-content">
+                        <img src="../../assets/QQ.png" alt="" class="bottom-qq">
+                      </div>
+                    </div>
+                    <div class="bottom-box">
+                      <div class="bottom-title">版权声明</div>
+                      <div class="bottom-content">
+                        @2025 梦翔工作室 版权所有<br>
+                      </div>
+                    </div>
+                  </div>
+                </el-col>
+              </el-row>
             </div>
           </div>
         </el-col>
@@ -294,11 +372,6 @@ const mouseleave_link = (num: number) => {
             <el-anchor-link href="#part3" title="奖项" />
           </el-anchor>
         </el-col>
-        <!-- 移动端导航指示器 -->
-        <!-- <div v-if="isMobile" class="mobile-indicator">
-          <span v-for="(_, index) in sections" :key="index"
-            :class="{ 'active-dot': currentIndex.includes(index) }"></span>
-        </div> -->
       </el-row>
     </div>
   </Transition>
@@ -356,12 +429,12 @@ const mouseleave_link = (num: number) => {
       </el-row>
     </div>
   </Transition>
-
   <!-- 加载动画 -->
   <LoadingScreen v-if="showLoading" style="position: fixed" />
 </template>
 
 <style scoped>
+/* #region */
 /* 主页和菜单的过渡效果 */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
@@ -388,7 +461,7 @@ const mouseleave_link = (num: number) => {
 
 .container {
   color: white;
-  height: 100vh;
+  min-height: 100vh;
   overflow: hidden;
   transition: all 0.5s ease-in-out;
 }
@@ -466,7 +539,7 @@ a {
   font-size: 80px;
   font-weight: bold;
   color: #000;
-  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic1.jpg') no-repeat center;
+  background: url('../../assets/main_pic4.jpg') no-repeat center;
   background-size: cover;
 }
 
@@ -523,33 +596,70 @@ a {
 }
 
 .line {
-  width: 90px;
+  width: 200px;
   border: 2px solid skyblue;
   margin: 20px auto;
 }
 
 .content {
-  width: 60%;
+  width: 70%;
   margin: 0 auto;
-  margin-top: 50px;
-  font-size: 24px;
+  margin-top: 10vh;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3vw;
 }
 
+.box {
+  position: relative;
+  width: 20vw;
+  height: 50vh;
+  background: linear-gradient(to bottom right, #1f2937, #111827);
+  border-radius: 1vw;
+  box-shadow: rgba(255, 255, 255, 0.3) 0px 10px 10px;
+}
+
+.box_img {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 35%;
+  border-radius: 10%;
+}
+
+.box_title {
+  position: absolute;
+  top: 43%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  padding-left: 2vw;
+  padding-right: 2vw;
+}
+
+.box_content {
+  position: absolute;
+  top: 55%;
+  font-size: 14px;
+  line-height: 20px;
+  padding-left: 2vw;
+  padding-right: 2vw;
+}
+
+/* part3 */
 .about_us,
 .award {
   position: relative;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   background-size: cover;
   line-height: 45px;
-}
-
-.about_us {
-  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic2.jpg') no-repeat center;
-}
-
-.award {
-  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic3.jpg') no-repeat center;
+  background-color: #161d26;
 }
 
 .about_us::before,
@@ -560,7 +670,6 @@ a {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.3);
   z-index: 0;
 }
 
@@ -587,6 +696,107 @@ a {
 
 .scroll-section.active {
   opacity: 1;
+}
+
+::v-deep .el-carousel__indicators--horizontal {
+  display: none;
+}
+
+.part3-box {
+  position: relative;
+  width: 15vw;
+}
+
+.part3-bottom {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  width: 100vw;
+  flex: 1;
+  background-color: #161d26;
+  padding-left: 8vw;
+  padding-right: 8vw;
+  padding-top: 5vh;
+}
+
+.part3-icon {
+  position: relative;
+  width: 5vw;
+  height: 5vw;
+  border-radius: 50%;
+  background-color: #1f2937;
+  transform: translateX(10%);
+  margin: 0 auto;
+}
+
+.part3-icon-img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2vw;
+}
+
+.part3-title {
+  position: absolute;
+  top: 12vh;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  margin: 1vh;
+  width: 100%;
+  text-align: center;
+}
+
+.part3-context {
+  position: absolute;
+  top: 15vh;
+  font-size: 14px;
+  margin-top: 1vh;
+  padding-left: 2vw;
+  line-height: 20px;
+  color: #9ca3af;
+}
+
+/* #endregion */
+.main-bottom {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  height: 30vh;
+  width: 100vw;
+  background-color: #131a29;
+  gap: 5vw;
+  padding-left: 5vw;
+  padding-right: 5vw;
+  padding-top: 2vh;
+}
+
+.bottom-box {
+  position: relative;
+  width: 25vw;
+  height: 25vh;
+}
+
+.bottom-title {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.bottom-content {
+  position: absolute;
+  top: 30%;
+  left: 10%;
+  font-size: 14px;
+  line-height: 20px;
+  color: #9CA3AF;
+}
+
+.bottom-qq {
+  width: 20px;
 }
 
 /* 菜单 */
@@ -829,8 +1039,7 @@ a {
 }
 
 .mobile_second_title {
-  font-size: 10vw !important;
-  padding-top: 15vh !important;
+  padding-top: 5vh !important;
 }
 
 .mobile-line {
@@ -854,8 +1063,31 @@ a {
   width: 85% !important;
   font-size: 18px !important;
   line-height: 30px !important;
+  flex-direction: column;
+  margin-top: 5vh;
 }
 
+.mobile-box {
+  width: 80vw;
+  height: 23vh;
+  margin-bottom: 2vh;
+}
+
+.mobile-box-img {
+  width: 15vw;
+}
+.mobile-part3-bottom {
+  flex-direction: column;
+  align-items: center;
+  padding-top: 0;
+}
+.mobile-part3-box{
+  width: 80vw!important;
+  height: 15vh!important;
+}
+.mobile-part3-icon-img {
+  width: 5vw!important;
+}
 .mobile-title {
   font-size: 24px !important;
 }

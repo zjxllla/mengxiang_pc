@@ -14,7 +14,7 @@ const name = ref('');
 const grade = ref('');
 const tel = ref('');
 const motto = ref('');
-const grades = ['大一', '大二', '大三']
+const grades = ['22级', '23级', '24级', '25级']
 
 const submit = async (event: Event) => {
   event.preventDefault();
@@ -266,7 +266,8 @@ const radio = () => {
 ::v-deep .el-select .is-transparent {
   color: #808080 !important;
 }
+
 ::v-deep.el-select__placeholder {
-  color:  black !important;
+  color: black !important;
 }
 </style>
