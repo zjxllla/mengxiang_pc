@@ -342,12 +342,12 @@ const mouseleave_link = (num: number) => {
                   <div class="main-bottom">
                     <div class="bottom-box">
                       <div class="bottom-title">关于我们</div>
-                      <div class="bottom-content">梦翔工作室成立于2018年，是一家专注 于数字创意与技术创新的优秀团队。</div>
+                      <div class="bottom-content">梦翔工作室是经学校审批于2007年成立的学习型工作....</div>
                     </div>
                     <div class="bottom-box">
                       <div class="bottom-title">联系我们</div>
                       <div class="bottom-content">
-                        <img src="../../assets/QQ.png" alt="" class="bottom-qq">
+                        <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=n2pzfGMmpUaj5RbTTa7_ti2k96uqgoFn&jump_from=webapi&authKey=0IBvXsTSc88nf5sBmyySkbjnAgduDPXfzMn0A1e66pviDD45vetA+1LBH0d40DAA"><img src="../../assets/QQ.png" alt="" class="bottom-qq"></a>
                       </div>
                     </div>
                     <div class="bottom-box">

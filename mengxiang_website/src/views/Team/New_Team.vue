@@ -209,7 +209,7 @@ const life_item_bgc_change = () => {
 }
 // 切换到登录页面
 const ToLogin = () => {
-  window.location.href = '/login'
+  window.location.href = 'https://qm.qq.com/cgi-bin/qm/qr?k=n2pzfGMmpUaj5RbTTa7_ti2k96uqgoFn&jump_from=webapi&authKey=0IBvXsTSc88nf5sBmyySkbjnAgduDPXfzMn0A1e66pviDD45vetA+1LBH0d40DAA'
 }
 </script>
 <template>
