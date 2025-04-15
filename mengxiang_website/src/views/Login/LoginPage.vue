@@ -129,6 +129,7 @@ const login = async () => {
       ElMessage.error(res.data.message)
     } else {
       userstore.set_account(formModel.value.username)
+      globalStore.token=res.data.token
       ElMessage.success(res.data.message)
     }
     reset()

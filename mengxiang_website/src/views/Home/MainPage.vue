@@ -224,9 +224,9 @@ const mouseleave_link = (num: number) => {
   <Transition name="fade-slide">
     <div class="container" v-show="showContainer">
       <img src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/icon.png" alt="菜单"
-        class="enum_icon" @click="to_enum" />
+        class="enum_icon" @click="to_enum" :class="{'mobile-enum-icon':isMobile}" />
       <Transition>
-        <div class="enum_text" v-if="ifShow">点我试试!</div>
+        <div class="enum_text" v-if="ifShow" :class="{ 'mobile-enum-text': isMobile }">点我试试!</div>
       </Transition>
       <el-row>
         <el-col :span="24">
@@ -1019,6 +1019,14 @@ a {
 }
 
 /* 移动端适配样式 */
+.mobile-enum-icon{
+  width: 80px !important;
+}
+.mobile-enum-text{
+  font-size: 12px!important;
+  top: 70px!important;
+  right: 70px!important;
+}
 .mobile-indicator {
   position: fixed;
   right: 20px;
@@ -1029,7 +1037,6 @@ a {
   gap: 10px;
   z-index: 1000;
 }
-
 .mobile-container-title {
   font-size: 10vh !important;
   writing-mode: vertical-rl;

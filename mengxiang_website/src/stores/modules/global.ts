@@ -5,6 +5,7 @@ export const useGlobalStore = defineStore(
   () => {
     const backto_enum = ref(false)
     const isMobile = ref(false)
+    const token = ref('')
     const getBackto_enum = () => {
       return backto_enum.value
     }
@@ -14,6 +15,7 @@ export const useGlobalStore = defineStore(
     return {
       backto_enum,
       isMobile,
+      token,
       getBackto_enum,
       setBackto_enum,
     }
