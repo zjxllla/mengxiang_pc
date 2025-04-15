@@ -301,9 +301,14 @@ const initObserver = () => {
 // 根据出现在视口的元素下标获取元素
 const getVisibleList = () => {
   visible_list.value = []
-  visible_index.value.forEach((item) => {
-    visible_list.value.push(article_list.value[Number(item)])
-  })
+  if (visible_index.value.length > article_list.value.length) {
+    visible_list.value = article_list.value
+  } else {
+    visible_index.value.forEach((item) => {
+      visible_list.value.push(article_list.value[Number(item)])
+    })
+  }
+  visible_list.value.reverse()
   nextTick(() => {
     const newCards = document.querySelectorAll('.main-card:not([data-observed])')
     newCards.forEach(card => {
@@ -476,7 +481,7 @@ const ToLogin = () => {
           <div class="aside-card1-bottom" v-if="isLogin">
             <div class="card1-bottom-name" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }">{{
               user_info.name
-            }}</div>
+              }}</div>
             <div class="card1-bottom-text" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }">
               {{ user_info.motto }}</div>
           </div>

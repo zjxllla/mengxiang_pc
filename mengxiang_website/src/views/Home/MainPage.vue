@@ -32,6 +32,7 @@ const checkMobile = () => {
 const handleScroll = (e: WheelEvent) => {
   e.preventDefault()
   if (isScrolling) return
+
   delta.value = e.deltaY > 0 ? 1 : -1
   changePage(delta.value)
 }
@@ -119,9 +120,7 @@ onMounted(() => {
     const entries = list.getEntries()
     const lastEntry = entries[entries.length - 1]
     loading_time.value = lastEntry.startTime + lastEntry.duration
-    setTimeout(() => {
-      showLoading.value = false
-    }, loading_time.value);
+    if (lastEntry) { showLoading.value = false }
   })
   oberserver.observe({
     type: 'largest-contentful-paint',
@@ -224,7 +223,7 @@ const mouseleave_link = (num: number) => {
   <Transition name="fade-slide">
     <div class="container" v-show="showContainer">
       <img src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/icon.png" alt="菜单"
-        class="enum_icon" @click="to_enum" :class="{'mobile-enum-icon':isMobile}" />
+        class="enum_icon" @click="to_enum" :class="{ 'mobile-enum-icon': isMobile }" />
       <Transition>
         <div class="enum_text" v-if="ifShow" :class="{ 'mobile-enum-text': isMobile }">点我试试!</div>
       </Transition>
@@ -282,7 +281,7 @@ const mouseleave_link = (num: number) => {
               :class="{ active: currentIndex.includes(2) || currentIndex.includes(3) }" style="height: 100vh">
               <!-- 确保每个部分的高度不超过视口 -->
               <div class="award" style="display: flex;flex-direction: column;">
-                <div class="context" :style="{'padding-bottom':isMobile?'3vh':'5vh'}">
+                <div class="context" :style="{ 'padding-bottom': isMobile ? '3vh' : '5vh' }">
                   <div class="section_title" :class="{ 'mobile_second_title': isMobile }">我们的优势</div>
                   <div class="line" :class="{ 'mobile-line': isMobile }"
                     style="margin: 3vh auto;border: 2px solid #deb13d;"></div>
@@ -297,13 +296,13 @@ const mouseleave_link = (num: number) => {
                     </el-carousel>
                   </div>
                 </div>
-                <div class="part3-bottom" :class="{'mobile-part3-bottom':isMobile}">
-                  <div class="part3-box" :class="{'mobile-part3-box':isMobile}">
-                    <div class="part3-icon" :style="{width:isMobile?'10vw':'5vw',height:isMobile?'10vw':'5vw'}">
+                <div class="part3-bottom" :class="{ 'mobile-part3-bottom': isMobile }">
+                  <div class="part3-box" :class="{ 'mobile-part3-box': isMobile }">
+                    <div class="part3-icon" :style="{ width: isMobile ? '10vw' : '5vw', height: isMobile ? '10vw' : '5vw' }">
                       <img src="../../assets/part3-icon2.png" alt="" class="part3-icon-img"
-                        :class="{'mobile-part3-icon-img':isMobile}">
+                        :class="{ 'mobile-part3-icon-img': isMobile }">
                     </div>
-                    <div class="part3-title" :style="{top:isMobile?'6vh':'12vh'}">专业紧跟市场</div>
+                    <div class="part3-title" :style="{ top: isMobile ? '6vh' : '12vh' }">专业紧跟市场</div>
                     <div class="part3-context" :style="{ top: isMobile ? '8vh' : '15vh' }">紧跟软件方向，及时调整学习内容，助力学生就业。</div>
                   </div>
                   <div class="part3-box" :class="{ 'mobile-part3-box': isMobile }">
@@ -347,7 +346,9 @@ const mouseleave_link = (num: number) => {
                     <div class="bottom-box">
                       <div class="bottom-title">联系我们</div>
                       <div class="bottom-content">
-                        <a target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=n2pzfGMmpUaj5RbTTa7_ti2k96uqgoFn&jump_from=webapi&authKey=0IBvXsTSc88nf5sBmyySkbjnAgduDPXfzMn0A1e66pviDD45vetA+1LBH0d40DAA"><img src="../../assets/QQ.png" alt="" class="bottom-qq"></a>
+                        <a target="_blank"
+                          href="https://qm.qq.com/cgi-bin/qm/qr?k=n2pzfGMmpUaj5RbTTa7_ti2k96uqgoFn&jump_from=webapi&authKey=0IBvXsTSc88nf5sBmyySkbjnAgduDPXfzMn0A1e66pviDD45vetA+1LBH0d40DAA"><img
+                            src="../../assets/QQ.png" alt="" class="bottom-qq"></a>
                       </div>
                     </div>
                     <div class="bottom-box">
@@ -1019,14 +1020,16 @@ a {
 }
 
 /* 移动端适配样式 */
-.mobile-enum-icon{
+.mobile-enum-icon {
   width: 80px !important;
 }
-.mobile-enum-text{
-  font-size: 12px!important;
-  top: 70px!important;
-  right: 70px!important;
+
+.mobile-enum-text {
+  font-size: 12px !important;
+  top: 70px !important;
+  right: 70px !important;
 }
+
 .mobile-indicator {
   position: fixed;
   right: 20px;
@@ -1037,6 +1040,7 @@ a {
   gap: 10px;
   z-index: 1000;
 }
+
 .mobile-container-title {
   font-size: 10vh !important;
   writing-mode: vertical-rl;
@@ -1083,18 +1087,22 @@ a {
 .mobile-box-img {
   width: 15vw;
 }
+
 .mobile-part3-bottom {
   flex-direction: column;
   align-items: center;
   padding-top: 0;
 }
-.mobile-part3-box{
-  width: 80vw!important;
-  height: 15vh!important;
+
+.mobile-part3-box {
+  width: 80vw !important;
+  height: 15vh !important;
 }
+
 .mobile-part3-icon-img {
-  width: 5vw!important;
+  width: 5vw !important;
 }
+
 .mobile-title {
   font-size: 24px !important;
 }

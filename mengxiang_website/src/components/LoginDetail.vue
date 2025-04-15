@@ -15,6 +15,7 @@ const grade = ref('');
 const tel = ref('');
 const motto = ref('');
 const grades = ['22级', '23级', '24级', '25级']
+const emit = defineEmits(['success'])
 
 const submit = async (event: Event) => {
   event.preventDefault();
@@ -30,6 +31,7 @@ const submit = async (event: Event) => {
     ElMessage.error(res.data.message)
   } else {
     ElMessage.success(res.data.message)
+    emit('success')
   }
 }
 

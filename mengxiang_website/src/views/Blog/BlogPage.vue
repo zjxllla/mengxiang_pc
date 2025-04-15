@@ -3,7 +3,11 @@
 </script>
 
 <template>
-  <div>这是博客区域</div>
+  <el-row>
+    <el-col :span="2"></el-col>
+
+    <el-col :span="2"></el-col>
+  </el-row>
 </template>
 
 <style scoped></style>

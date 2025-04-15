@@ -13,7 +13,7 @@ const form = ref()
 const regist_success = ref(false)
 const globalStore = useGlobalStore()
 const userstore = useUserStore()
-const isRegister = ref(true)
+const isRegister = ref(false)
 const shapesVisible = ref(true)
 const formModel = ref({
   username: '',
@@ -129,8 +129,9 @@ const login = async () => {
       ElMessage.error(res.data.message)
     } else {
       userstore.set_account(formModel.value.username)
-      globalStore.token=res.data.token
+      globalStore.token = res.data.token
       ElMessage.success(res.data.message)
+      window.history.back()
     }
     reset()
   } catch (error) {
@@ -142,6 +143,12 @@ const login = async () => {
 // 返回
 const back = () => {
   window.history.back()
+}
+
+// 详细信息成功
+const DetailSuccess = () => {
+  regist_success.value = false
+  isRegister.value = false
 }
 </script>
 
@@ -217,7 +224,7 @@ const back = () => {
   </div>
 
   <!-- 详细信息 -->
-  <LoginDetail class="loginDetail" v-if="regist_success"></LoginDetail>
+  <LoginDetail class="loginDetail" v-if="regist_success" @success="DetailSuccess"></LoginDetail>
 </template>
 
 <style scoped>
