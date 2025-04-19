@@ -14,7 +14,15 @@ const prop = defineProps({
   height: {
     type: String,
     default: '70vh',
-  }
+  },
+  IsTreeHole: {
+    type: Boolean,
+    default: true,
+  },
+  backgroundColor: {
+    type: String,
+    default: '#d3d8dd',
+  },
 })
 // 声明事件
 const emits = defineEmits<{ (e: "update:modelValue", value: string): void }>()
@@ -38,7 +46,7 @@ const toolbarConfig = {
     'group-indent', // 排除缩进相关
     'group-more-style', // 排除更多样式
     'insertTable', // 排除表格
-    'codeBlock', // 排除代码块
+    ...(prop.IsTreeHole ? ['codeBlock'] : []), // 根据IsTreeHole动态排除
     'divider', // 排除分割线
     'emotion', // 排除表情
     'insertLink', // 排除链接
@@ -64,8 +72,9 @@ const editorConfig = {
   placeholder: '请输入内容...',
   MENU_CONF: {
     uploadImage: { // 上传图片的配置
-      server:'http://localhost:8080/wang/image',  // 上传图片的网址
+      server: 'http://localhost:8080/wang/image',  // 上传图片的网址
       fieldName: 'file', // 上传文件的名称
+      maxNumberOfFiles: prop.IsTreeHole ? 1 : 10, // 最多上传 10 张图片
     }
   }
 }
@@ -92,12 +101,26 @@ const handleCreated = (editor: IDomEditor) => {
 
 <style>
 #editor-container .w-e-text-container {
-  background-color: #d3d8dd !important;
+  background-color: v-bind('prop.backgroundColor') !important;
   border-top: 1px solid #ddd !important;
 }
 
-/* 如果需要同时更改工具栏背景 */
 #editor-container .w-e-toolbar {
-  background-color: #d3d8dd !important;
+  background-color: v-bind('prop.backgroundColor') !important;
+}
+
+.w-e-text-container pre code {
+  background-color: #eee !important;
+  padding: 1rem !important;
+  font-family: "Helvetica Neue",
+    Helvetica,
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "Microsoft YaHei",
+    "微软雅黑",
+    Arial,
+    sans-serif !important;
+  color: inherit !important;
+  border-radius: 10px !important;
 }
 </style>

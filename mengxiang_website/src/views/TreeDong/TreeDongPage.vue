@@ -84,6 +84,7 @@ onBeforeMount(async () => {
   }
   // 获取文章列表
   await getArticleList()
+  article_list.value.reverse()
   dealTime(article_list.value as unknown as article[])
 })
 watch(article_list, (newValue) => {
@@ -116,13 +117,33 @@ const to_white = () => {
     isAnimating_dark.value = false;
   }, 1000);
 }
-const onPraise = (praise: boolean, index: number) => {
+const onPraise = async (praise: boolean, index: number) => {
   if (praise) {
-    article_list.value[index].like_num--
-    is_praise.value[index] = false
+    const res1 = await Myaxios.post('/hole/like', {
+      account: article_list.value[index].account,
+      title: article_list.value[index].title,
+      like: 1
+    })
+    if (res1.data.status === 1) {
+      ElMessage.success(res1.data.message)
+      article_list.value[index].like_num++
+      is_praise.value[index] = true
+    } else {
+      ElMessage.error(res1.data.message)
+    }
   } else {
-    article_list.value[index].like_num++
-    is_praise.value[index] = true
+    const res2 = await Myaxios.post('/hole/like', {
+      account: article_list.value[index].account,
+      title: article_list.value[index].title,
+      like: 1
+    })
+    if (res2.data.status === 1) {
+      ElMessage.warning('取消点赞')
+      article_list.value[index].like_num--
+      is_praise.value[index] = false
+    } else {
+      ElMessage.error('取消失败')
+    }
   }
 }
 const onOrginal = (index: number, id: number) => {
@@ -170,6 +191,7 @@ const SubmitArticle = async () => {
     new_article.value = ''
     article_title.value = ''
     await getArticleList()
+    article_list.value.reverse()
     dealTime(article_list.value as unknown as article[])
   } else {
     ElMessage.error(res.data.message)
@@ -308,7 +330,6 @@ const getVisibleList = () => {
       visible_list.value.push(article_list.value[Number(item)])
     })
   }
-  visible_list.value.reverse()
   nextTick(() => {
     const newCards = document.querySelectorAll('.main-card:not([data-observed])')
     newCards.forEach(card => {
@@ -422,7 +443,8 @@ const ToLogin = () => {
             <div class="body-link" @click="onOrginal(index, item.id)">
               <span href="#" :style="{ color: isDark_animation ? '#b4c6fa' : '#0866fe' }">@{{ item.title }}</span>
             </div>
-            <div class="body-text" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }" v-html="item.content">
+            <div class="body-text" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }" v-html="item.content"
+              :class="{'mobile-body-text':isMobile}">
             </div>
             <div class="body-img" v-if="item.image">
               <img :src="item.image" alt="" style="width: 30%;">
@@ -431,10 +453,10 @@ const ToLogin = () => {
           </div>
           <div class="card-bottom">
             <div class="bottom-icons">
-              <div class="praise" v-if="!is_praise[index]" @click="onPraise(false, index)">
+              <div class="praise" v-if="!is_praise[index]" @click="onPraise(true, index)">
                 <i class="iconfont icon-dianzan"></i> 点赞
               </div>
-              <div class="praise" v-if="is_praise[index]" @click="onPraise(true, index)">
+              <div class="praise" v-if="is_praise[index]" @click="onPraise(false, index)">
                 <i class="iconfont icon-dianzan" style="font-weight: 700;transition: all 1.5s;"
                   :style="{ color: isDark_animation ? 'skyblue' : 'blue' }"></i> {{ item.like_num }}
               </div>
@@ -450,8 +472,10 @@ const ToLogin = () => {
                 <textarea type="text" style="min-height: 20vh;width: 100%;" class="comment-textarea"
                   placeholder="你的评论可以一针见血!" v-model="comment_text"></textarea>
                 <div class="comment-buttons">
-                  <el-button round type="danger" style="width: 10vw;" @click="is_commment[index] = false">取消</el-button>
-                  <el-button round type="primary" style="width: 10vw;" @click="submit_comment(item.id)">提交</el-button>
+                  <el-button round type="danger" :style="{width: isMobile?'20vw':'10vw'}"
+                    @click="is_commment[index] = false">取消</el-button>
+                  <el-button round type="primary" :style="{ width: isMobile ? '20vw' : '10vw' }"
+                    @click="submit_comment(item.id)">提交</el-button>
                 </div>
               </div>
             </transition>
@@ -496,7 +520,7 @@ const ToLogin = () => {
             </div>
           </div>
           <div class="aside-card2-bottom" :style="{ background: isDark_animation ? '#374151' : '#fff' }">
-            免责声明：本站所展示内容为网友投稿发布，如有侵权等违规信息，请联系客服进行删除处理！
+            免责声明：本站所展示内容为网友投稿发布，如有侵权等违规信息，请联系管理员进行删除处理！
           </div>
         </div>
       </el-col>
@@ -515,7 +539,7 @@ const ToLogin = () => {
           <div class="drawer-top-name">{{ original_article.name }}</div>
           <div class="drawer-top-time" :style="{ color: isDark_animation ? '#ccd0db' : '#4b5563' }">
             {{ original_article.time }}</div>
-          <div class="drawer-top-love" @click="onPraise(is_praise[original_article_index], original_article_index)">
+          <div class="drawer-top-love" @click="onPraise(!is_praise[original_article_index], original_article_index)">
             <i class="iconfont icon-dianzan-aixinshixin" style="font-size: 30px;"
               :style="{ color: is_praise[original_article_index] ? 'red' : 'gray' }"></i>
           </div>
@@ -569,7 +593,7 @@ const ToLogin = () => {
           <div>发表文章</div>
           <input type="text" placeholder="书写标题" class="drawer-new-title-right" v-model="article_title">
         </div>
-        <TextEdit class="drawer-new-text" height="73vh" v-model="new_article"></TextEdit>
+        <TextEdit class="drawer-new-text" height="73vh" v-model="new_article" :IsTreeHole="true"></TextEdit>
         <div class="drawer-new-buttons">
           <el-button class="drawer-new-btn" round type="danger" @click="drawer_new = false">取消投稿</el-button>
           <el-button class="drawer-new-btn" round type="primary" @click="SubmitArticle">确认发布</el-button>
@@ -580,7 +604,6 @@ const ToLogin = () => {
 </template>
 
 <style scoped>
-/* #region */
 .scroll-top {
   position: fixed;
   bottom: 5vh;
@@ -600,7 +623,6 @@ const ToLogin = () => {
   transform: scale(1.2);
 }
 
-/* #region */
 .fade-enter-active,
 .fade-leave-active {
   transition: all 0.5s ease-in-out;
@@ -850,7 +872,10 @@ const ToLogin = () => {
   letter-spacing: 0;
   color: #203656;
   display: -webkit-box;
+  word-break: break-all;
+  overflow-wrap: break-word;
   -webkit-box-orient: vertical;
+  white-space: pre-wrap;
   line-clamp: 5;
   -webkit-line-clamp: 5;
   overflow: hidden;
@@ -1129,6 +1154,8 @@ const ToLogin = () => {
 .drawer-body-text {
   font-size: 16px;
   line-height: 1.8;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .drawer-send-comment {
@@ -1214,7 +1241,6 @@ const ToLogin = () => {
   padding-bottom: 1vh;
 }
 
-/* #endregion */
 .drawer-new-title {
   display: flex;
   justify-content: space-between;
@@ -1259,7 +1285,6 @@ const ToLogin = () => {
   padding: 20px;
 }
 
-/* #endregion */
 /* 移动端适配 */
 .mobile-top-icon-img {
   width: 15vw !important;
@@ -1284,5 +1309,10 @@ const ToLogin = () => {
 
 .mobile-main-card {
   width: 100%;
+  padding-left: 7vw !important;
+  padding-right: 7vw !important;
+}
+.mobile-body-text{
+  min-height: 8vh !important;
 }
 </style>

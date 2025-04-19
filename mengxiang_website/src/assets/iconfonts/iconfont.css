@@ -1,11 +1,11 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4870560 */
-  src: url('iconfont.eot?t=1744541275932'); /* IE9 */
-  src: url('iconfont.eot?t=1744541275932#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('iconfont.woff2?t=1744541275932') format('woff2'),
-       url('iconfont.woff?t=1744541275932') format('woff'),
-       url('iconfont.ttf?t=1744541275932') format('truetype'),
-       url('iconfont.svg?t=1744541275932#iconfont') format('svg');
+  src: url('iconfont.eot?t=1744865950204'); /* IE9 */
+  src: url('iconfont.eot?t=1744865950204#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1744865950204') format('woff2'),
+       url('iconfont.woff?t=1744865950204') format('woff'),
+       url('iconfont.ttf?t=1744865950204') format('truetype'),
+       url('iconfont.svg?t=1744865950204#iconfont') format('svg');
 }
 
 .iconfont {
@@ -14,6 +14,38 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-denglu:before {
+  content: "\e653";
+}
+
+.icon-fabu:before {
+  content: "\e64d";
+}
+
+.icon-fabu1:before {
+  content: "\ec09";
+}
+
+.icon-noun__cc:before {
+  content: "\e60b";
+}
+
+.icon-wenjianjia:before {
+  content: "\e64b";
+}
+
+.icon-rili:before {
+  content: "\e670";
+}
+
+.icon-wenjianjia1:before {
+  content: "\e61d";
+}
+
+.icon-rili1:before {
+  content: "\e62c";
 }
 
 .icon-15:before {

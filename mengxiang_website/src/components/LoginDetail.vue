@@ -14,11 +14,19 @@ const name = ref('');
 const grade = ref('');
 const tel = ref('');
 const motto = ref('');
-const grades = ['22级', '23级', '24级', '25级']
+const grades = ['20级', '21级', '22级', '23级', '24级', '25级']
 const emit = defineEmits(['success'])
 
 const submit = async (event: Event) => {
   event.preventDefault();
+  if ((tel.value.length !== 11 || tel.value[0] !== '1') && tel.value.length !== 0) {
+    ElMessage.error('请输入正确的手机号')
+    return
+  }
+  if (gender.value === '0') {
+    ElMessage.warning('请选择性别')
+    return
+  }
   const res = await axios.post('/improve/info', {
     account: userstore.get_account(),
     name: name.value,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref,onBeforeUnmount } from 'vue'
 import NewTeamButton from '../../components/NewTeamButton.vue'
 import { useGlobalStore } from '../../stores'
 import BackBtn from '@/components/BackBtn.vue';
@@ -86,7 +86,15 @@ onMounted(() => {
     observe.value?.observe(item)
   })
 })
-
+onBeforeUnmount(() => {
+  // 清除轮播背景
+  clearInterval(life_item3_timer.value)
+  // 清除视频播放
+  if (video_ref.value || video_ref2.value) {
+    video_ref.value?.pause()
+    video_ref2.value?.pause()
+  }
+})
 // 返回上一页
 const back = () => {
   globalStore.setBackto_enum(true)
@@ -211,6 +219,7 @@ const life_item_bgc_change = () => {
 const ToLogin = () => {
   window.location.href = 'https://qm.qq.com/cgi-bin/qm/qr?k=n2pzfGMmpUaj5RbTTa7_ti2k96uqgoFn&jump_from=webapi&authKey=0IBvXsTSc88nf5sBmyySkbjnAgduDPXfzMn0A1e66pviDD45vetA+1LBH0d40DAA'
 }
+
 </script>
 <template>
   <div class="back" :class="{ 'Mobile_back': isMobile }">

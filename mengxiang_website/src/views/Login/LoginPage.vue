@@ -177,7 +177,7 @@ const DetailSuccess = () => {
           </div>
         </el-form-item>
         <el-form-item prop="username">
-          <el-input :prefix-icon="User" placeholder="请输入用户名" v-model="formModel.username"></el-input>
+          <el-input :prefix-icon="User" placeholder="请输入账号" v-model="formModel.username"></el-input>
         </el-form-item>
         <el-form-item prop="password">
           <el-input v-model="formModel.password" :prefix-icon="Lock" type="password" placeholder="请输入密码"></el-input>
@@ -204,7 +204,7 @@ const DetailSuccess = () => {
           </div>
         </el-form-item>
         <el-form-item prop="username">
-          <el-input :prefix-icon="User" placeholder="请输入用户名" v-model="formModel!.username"></el-input>
+          <el-input :prefix-icon="User" placeholder="请输入账号" v-model="formModel!.username"></el-input>
         </el-form-item>
         <el-form-item prop="password">
           <el-input name="password" :prefix-icon="Lock" type="password" placeholder="请输入密码"
