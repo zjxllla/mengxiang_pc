@@ -167,7 +167,7 @@ const back = () => {
 <style scoped>
 /* #region */
 /* 注册自定义属性为可动画属性 */
-/* @property --gradient-deg1 {
+@property --gradient-deg1 {
   syntax: '<angle>';
   inherits: false;
   initial-value: 90deg;
@@ -183,7 +183,8 @@ const back = () => {
   syntax: '<angle>';
   inherits: false;
   initial-value: 270deg;
-} */
+}
+
 .bgc {
   width: 100%;
   height: 100%;
