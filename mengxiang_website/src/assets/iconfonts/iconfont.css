@@ -1,11 +1,11 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4870560 */
-  src: url('iconfont.eot?t=1744865950204'); /* IE9 */
-  src: url('iconfont.eot?t=1744865950204#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('iconfont.woff2?t=1744865950204') format('woff2'),
-       url('iconfont.woff?t=1744865950204') format('woff'),
-       url('iconfont.ttf?t=1744865950204') format('truetype'),
-       url('iconfont.svg?t=1744865950204#iconfont') format('svg');
+  src: url('iconfont.eot?t=1745213837785'); /* IE9 */
+  src: url('iconfont.eot?t=1745213837785#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1745213837785') format('woff2'),
+       url('iconfont.woff?t=1745213837785') format('woff'),
+       url('iconfont.ttf?t=1745213837785') format('truetype'),
+       url('iconfont.svg?t=1745213837785#iconfont') format('svg');
 }
 
 .iconfont {
@@ -14,6 +14,22 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-fanhui1:before {
+  content: "\e60c";
+}
+
+.icon-fanhui2:before {
+  content: "\e60d";
+}
+
+.icon-fanhui3:before {
+  content: "\e602";
+}
+
+.icon-fanhui11:before {
+  content: "\e603";
 }
 
 .icon-denglu:before {

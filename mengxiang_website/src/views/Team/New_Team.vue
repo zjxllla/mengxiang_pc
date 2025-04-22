@@ -18,6 +18,7 @@ const count = ref(0)
 const globalStore = useGlobalStore()
 const isMobile = ref(globalStore.isMobile)
 const listen_count = ref(0)
+
 onMounted(() => {
   // 设置视频倍速
   if (video_ref.value || video_ref2.value) {
@@ -302,17 +303,15 @@ const ToLogin = () => {
       <el-col :span="14" class="life-item1" @mouseenter="life_item1_in(0)" @mouseleave="life_item1_out(0)">
         <div class="life-title">人才有活水,组织有活力</div>
         <div class="life-text">
-          腾讯的活水文化，可以让你在多个舞台挥洒激情、获得持续成长。腾讯多元的业务布局会给你提供丰富的发展机会，
-          所有工作机会都会对内部员工开放，只要工作满一年就可以自由申请内部转岗，
-          每年都有1000+的腾讯员工通过活水机制找到更适合自己的工作岗位。
+          梦翔工作室以“人才有活水，组织有活力”为理念，通过举办多样化的活动，如创意比赛、技能培训等，激发成员潜能，培养创新思维。
+          同时，工作室注重团队协作，鼓励成员积极参与项目实践，让人才在实践中成长，为组织注入源源不断的活力，推动社团持续发展。
         </div>
       </el-col>
       <el-col :span="6" class="life-item2" @mouseenter="life_item1_in(1)" @mouseleave="life_item1_out(1)">
         <div class="life-title">梦翔公社</div>
         <div class="life-text" style="background: linear-gradient(to top,#0052d9,#02fae9); padding-top: 25%">
-          鹅民公社是腾讯弹性福利平台，你可以在公社自选健康、学习成长和鹅厂特色类福利，
-          还可以向鹅民公社推荐你想要的福利，公社满足员工不同的个性化福利需求，
-          从此和千人一面的“福利”说拜拜。
+          梦翔社团是由大学生们自发组织的充满活力与创造力的社团。在这里，同学们汇聚一堂，共同追求梦想，探索未知。
+          社团以“梦翔公社”为平台，举办各类活动，如创意分享会、学术讲座、团队拓展等，旨在激发成员的创造力，培养团队合作精神，提升综合素质。
         </div>
       </el-col>
       <el-col :span="2"></el-col>
@@ -325,13 +324,13 @@ const ToLogin = () => {
         <div class="life-item3-bgc-3"></div>
         <div class="life-title">MengXiang Talk</div>
         <div class="life-text" style="background: linear-gradient(to top,#03576a,#02fae9);padding-top: 20%;">
-          听陈晓卿、许知远等影响力大咖谈天说地，听内部同事分享的工作生活的体验和感悟，在这个分享和交流的平台里，改变人生轨迹的灵光也许就此闪现。
+          在当今信息爆炸的时代，知识的传播与思想的交流愈发重要。而在这片广阔的交流天地中，梦翔工作室犹如一颗璀璨的星辰，以其独特的 Mengxiang Talk 系列活动，闪耀着独特的光芒，为广大受众带来了全新的思想盛宴。
         </div>
       </el-col>
       <el-col :span="12" class="life-item4" @mouseenter="life_item1_in(3)" @mouseleave="life_item1_out(3)">
         <div class="life-title">梦翔 Party</div>
         <div class="life-text" style="background: linear-gradient(to top,#598d00,#a6ff0e);padding-top: 15%;">
-          听陈晓卿、许知远等影响力大咖谈天说地，听内部同事分享的工作生活的体验和感悟，在这个分享和交流的平台里，改变人生轨迹的灵光也许就此闪现。
+          梦翔Party是一场充满活力与创意的社交盛会。在这里，参与者们不仅能享受精彩的音乐和美食，还能与志同道合的朋友交流互动。工作室精心设计了各种趣味游戏和互动环节，让现场气氛热烈而温馨。
         </div>
       </el-col>
       <el-col :span="2"></el-col>

@@ -384,8 +384,8 @@ const ToLogin = () => {
       <el-col :span="1"></el-col>
       <el-col :span="22" class="top-content">
         <div class="top-icon">
-          <img src="../../assets/icon.png" alt="" style="width: 4vw;margin-right: 1vw;"
-            :class="{ 'mobile-top-icon-img': isMobile }" />
+          <img src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang%2Fpicture%2Ficon.png" alt=""
+            style="width: 4vw;margin-right: 1vw;" :class="{ 'mobile-top-icon-img': isMobile }" />
           <div :style="{ fontSize: isMobile ? '30px' : '2vw' }">梦翔树洞</div>
         </div>
         <div class="top-saying" v-if="!isMobile">
@@ -428,6 +428,8 @@ const ToLogin = () => {
         <div class="main-buttons">
           <el-button round style="width: 30%;padding:3vh;transition: all 1.5s;"
             :type="isDark_animation ? 'warning' : 'success'" @click="drawer_new = true">投稿树洞</el-button>
+          <el-button round style="width: 30%;padding:3vh;transition: all 1.5s;"
+            :type="isDark_animation ? 'info' : 'primary'" @click="ToLogin" v-if="!isLogin">前往登录</el-button>
         </div>
         <div class="main-card" :style="{ background: isDark_animation ? '#374151' : '#fff' }"
           v-for="(item, index) in visible_list" :key="item.id" :id="String(index)"
@@ -948,7 +950,7 @@ const ToLogin = () => {
 .aside-card1-top {
   width: 100%;
   height: 40%;
-  background: url('../../assets/login_bgc.jpg');
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang%2Fpicture%2Flogin_bgc.jpg');
   background-size: 100% 100%;
   border-radius: 20px 20px 0 0;
 }

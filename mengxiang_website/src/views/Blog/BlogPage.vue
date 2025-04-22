@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, onBeforeMount, watch, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, onBeforeMount, watch, nextTick, onUnmounted } from 'vue'
 import { ArrowRightBold } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import TextEdit from '@/components/TextEdit.vue'
@@ -16,8 +16,11 @@ const cate_num = ref(0)
 const deg1 = ref(90)
 const deg2 = ref(180)
 const deg3 = ref(270)
+const deg4 = ref(45)
+const colors = ref(['#8282eb', '#8df5a8', '#f598a8'])
 const Love = ref<boolean[]>([])
 const isLogin = ref(false)
+const scroll_top = ref(false)
 const drawer_new = ref(false)
 const new_blog = ref('')
 const new_blog_info = ref({ title: '', cate: '', introduction: '' })
@@ -37,6 +40,7 @@ const blog_list = ref<blog[]>([])
 const visible_index = ref<string[]>(['0', '1', '2'])
 const visible_list = ref<blog[]>([])
 const observer = ref<IntersectionObserver | null>(null)
+const isMobile = globalStore.isMobile
 
 onBeforeMount(async () => {
   // 自动登录
@@ -84,19 +88,30 @@ const bgcAnimation = () => {
   deg1.value = Math.floor(Math.random() * 360)
   deg2.value = Math.floor(Math.random() * 360)
   deg3.value = Math.floor(Math.random() * 360)
+  deg4.value += 90
+  if (deg4.value >= 360) {
+    deg4.value = 45
+  }
+  const color = colors.value[0]
+  colors.value[0] = colors.value[1]
+  colors.value[1] = colors.value[2]
+  colors.value[2] = color
+  document.documentElement.style.setProperty('--color1', colors.value[0])
+  document.documentElement.style.setProperty('--color2', colors.value[1])
+  document.documentElement.style.setProperty('--color3', colors.value[2])
 }
 const isLove = async (index: number) => {
   Love.value[index] = !Love.value[index]
-  if(Love.value[index]) {
-    const res = await axios.post('/blog/like', { account: user_info.value.account,title: blog_list.value[index].title,like:1})
-    if(res.data.status === 1) {
+  if (Love.value[index]) {
+    const res = await axios.post('/blog/like', { account: user_info.value.account, title: blog_list.value[index].title, like: 1 })
+    if (res.data.status === 1) {
       ElMessage.success(res.data.message)
     } else {
       ElMessage.error(res.data.message)
     }
-  }else{
-    const res = await axios.post('/blog/like', { account: user_info.value.account,title: blog_list.value[index].title,like:-1})
-    if(res.data.status === 1) {
+  } else {
+    const res = await axios.post('/blog/like', { account: user_info.value.account, title: blog_list.value[index].title, like: -1 })
+    if (res.data.status === 1) {
       ElMessage.warning('取消点赞')
     } else {
       ElMessage.error('取消失败')
@@ -197,12 +212,15 @@ const get_number = async () => {
   const res4 = await axios.post('/blog/get_count', { account: user.value })
   if (res4.data.status === 1) {
     const cates = ref<string[]>([])
-    blog_num.value = res4.data.message.length
-    res4.data.message.forEach((item: blog) => {
-      cates.value.push(item.cate)
-    })
-    cates.value = [...new Set(cates.value)]
-    cate_num.value = cates.value.length
+    const message = res4.data.message
+    if (Array.isArray(message)) {
+      blog_num.value = res4.data.message.length
+      message.forEach((item: blog) => {
+        cates.value.push(item.cate)
+      })
+      cates.value = [...new Set(cates.value)]
+      cate_num.value = cates.value.length
+    }
   }
 }
 const initObserver = () => {
@@ -251,16 +269,52 @@ const getVisibleList = () => {
     })
   })
 }
+// 滚动到顶部
+const handleScroll = () => {
+  const scrollContainer = document.querySelector('.bgc')
+  if (!scrollContainer) return
+  const scrollPosition = scrollContainer.scrollTop
+  const windowHeight = window.innerHeight
+  scroll_top.value = scrollPosition >= (windowHeight * 0.5)
+}
+onMounted(() => {
+  const scrollContainer = document.querySelector('.bgc')
+  if (scrollContainer) {
+    scrollContainer.addEventListener('scroll', handleScroll)
+  }
+})
+onUnmounted(() => {
+  const scrollContainer = document.querySelector('.bgc')
+  if (scrollContainer) {
+    scrollContainer.removeEventListener('scroll', handleScroll)
+  }
+})
+const scroll_to_top = () => {
+  const scrollContainer = document.querySelector('.bgc')
+  if (scrollContainer) {
+    scrollContainer.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+}
+const back = () => {
+  globalStore.setBackto_enum(true)
+  window.history.back()
+}
 </script>
 
 <template>
   <div class="bgc"
     :style="{ '--gradient-deg1': `${deg1}deg`, '--gradient-deg2': `${deg2}deg`, '--gradient-deg3': `${deg3}deg`, }">
-
+    <div class="scroll-top" v-if="scroll_top" @click="scroll_to_top" :class="{ 'mobile-scroll-to-top': isMobile }">
+      <i class="iconfont icon-topDouble" style="color: black;font-weight: 900;cursor: pointer;"></i>
+    </div>
     <!-- top顶部 -->
-    <el-row class="top">
+    <el-row class="top" :style="{ '--color1': `${colors[0]}`, '--color2': `${colors[1]}`, 'color3': `${colors[2]}` }">
       <div class="top-title">
-        <img src="../../assets/icon.png" alt="" style="width: 3.5vw;margin-right: 1vw;" />
+        <img src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang%2Fpicture%2Ficon.png" alt=""
+          style="margin-right: 1vw;" :style="{ width: isMobile ? '4.5vh' : '3.5vw' }" />
         <div>梦翔博客</div>
       </div>
       <div class="top-user-info" v-if="isLogin">
@@ -268,16 +322,26 @@ const getVisibleList = () => {
         </div>
         <div class="top-submit" @click="new_edit"><i class="iconfont icon-fabu1" style="margin-right: 0.5vw;"></i>发布
         </div>
+        <div class="top-back" @click="back">
+          <i class="iconfont icon-fanhui11" style="margin-right: 0.5vw;"></i>返回
+        </div>
       </div>
-      <div class="top-login" @click="ToLogin" v-else>
-        <i class="iconfont icon-denglu" style="margin-right: 0.5vw;"></i>登录
+      <div class="top-login" v-else>
+        <div class="top-login-icon" @click="ToLogin">
+          <i class="iconfont icon-denglu" style="margin-right: 0.5vw;"></i>登录
+        </div>
+        <div class="top-back" @click="back">
+          <i class="iconfont icon-fanhui11" style="margin-right: 0.5vw;margin-left: 1vw;"></i>返回
+        </div>
       </div>
+
     </el-row>
     <!-- main主体 -->
     <el-row class="main">
-      <el-col :span="1"></el-col>
-      <el-col :span="18" class="cards">
-        <div class="card" v-for="(item, index) in visible_list" :key="item.id" :id="String(index)">
+      <el-col :span="isMobile ? 2 : 1"></el-col>
+      <el-col :span="isMobile ? 20 : 18" class="cards" :class="{ 'mobile-cards': isMobile }">
+        <div class="card" v-for="(item, index) in visible_list" :key="item.id" :id="String(index)"
+          :class="{ 'mobile-card': isMobile }">
           <div class="card-title">
             <div class="card-title-name" @click="DetailArticle(index)">{{ item.title }}</div>
             <div class="card-title-love" @click="isLove(index)"><i class="iconfont icon-dianzan-aixinshixin"
@@ -295,8 +359,8 @@ const getVisibleList = () => {
           </div>
         </div>
       </el-col>
-      <el-col :span="4" class="aside-cards">
-        <div class="aside-card1">
+      <el-col :span="4" class="aside-cards" v-if="!isMobile">
+        <div class="aside-card1" :style="{ '--gradient-deg4': `${deg4}deg` }">
           <div class=aside-card1-avatar v-if="isLogin">
             <img :src='user_info.avatar' alt="" style="height: 15vh;border-radius: 20px;" />
           </div>
@@ -309,17 +373,18 @@ const getVisibleList = () => {
           </div>
         </div>
       </el-col>
-      <el-col :span="1"></el-col>
+      <el-col :span="isMobile ? 2 : 1"></el-col>
     </el-row>
     <!-- 发布抽屉 -->
     <el-drawer v-model='drawer_new' :with-header="false" style="background-color: #f8eef0;" :before-close="handleClose"
-      size="50%">
+      :size="isMobile ? '80%' : '50%'" :direction="isMobile ? 'btt' : 'rtl'">
       <div class="blog-new">
         <div class="blog-new-title">
-          <div class="blog-new-title-name">发表博客</div>
-          <input type="text" placeholder="博客标题" class="blog-new-title-right1" v-model="new_blog_info.title">
-          <input type="text" placeholder="博客类别（如：编程技术，前端......）" class="blog-new-title-right2"
-            v-model="new_blog_info.cate">
+          <div class="blog-new-title-name" :class="{ 'mobile-blog-new-title-name': isMobile }">发表博客</div>
+          <input type="text" placeholder="博客标题" class="blog-new-title-right1" v-model="new_blog_info.title"
+            :class="{ 'mobile-blog-new-title-right': isMobile }">
+          <input type="text" :placeholder="isMobile ? '博客类别' : '博客类别（如：编程技术，前端......）'" class="blog-new-title-right2"
+            v-model="new_blog_info.cate" :class="{ 'mobile-blog-new-title-right': isMobile }">
         </div>
         <div class="blog-new-content">
           <textarea class="blog-new-content-introduce" placeholder="博客内容简介(可选)"
@@ -336,7 +401,6 @@ const getVisibleList = () => {
 </template>
 
 <style scoped>
-/* #region */
 /* 注册自定义属性为可动画属性 */
 @property --gradient-deg1 {
   syntax: '<angle>';
@@ -356,6 +420,30 @@ const getVisibleList = () => {
   initial-value: 270deg;
 }
 
+@property --gradient-deg4 {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 45deg;
+}
+
+@property --color1 {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #f598a8;
+}
+
+@property --color2 {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #8df58d;
+}
+
+@property --color3 {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: #8282eb;
+}
+
 .bgc {
   width: 100%;
   height: 100%;
@@ -369,6 +457,25 @@ const getVisibleList = () => {
   overflow: auto;
 }
 
+.scroll-top {
+  position: fixed;
+  bottom: 5vh;
+  right: 5vw;
+  width: 3vw;
+  height: 3vw;
+  border-radius: 20%;
+  text-align: center;
+  line-height: 3vw;
+  background-color: #d3d8dd;
+  transition: all 0.5s;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.scroll-top:hover {
+  transform: scale(1.2);
+}
+
 .top {
   display: flex;
   align-items: center;
@@ -377,9 +484,10 @@ const getVisibleList = () => {
   position: sticky;
   top: 0;
   z-index: 2;
-  background: linear-gradient(to right, #f598a8, #8df58d, #8282eb);
   padding-left: calc(100vw/24);
   padding-right: calc(100vw/24);
+  background: linear-gradient(to left, var(--color1), var(--color2), var(--color3));
+  transition: --color1 5s linear, --color2 5s linear, --color3 5s linear;
 }
 
 .top-title {
@@ -396,28 +504,39 @@ const getVisibleList = () => {
   color: #fff;
 }
 
+.top-back {
+  cursor: pointer;
+}
+
+.top-back:hover {
+  color: #0505f3;
+  font-weight: 700;
+}
+
 .top-login {
+  display: flex;
   color: #fff;
 }
 
-.top-login:hover {
-  color: #0505f3;
+.top-login-icon {
   cursor: pointer;
-  font-weight: 700;
 }
 
 .top-submit {
   cursor: pointer;
 }
 
-.top-submit:hover {
+.top-submit:hover,
+.top-login-icon:hover {
   color: #0505f3;
+  font-weight: 700;
 }
 
 .main {
   position: relative;
   min-height: 85vh;
   margin-top: 5vh;
+  margin-bottom: 4vh;
 }
 
 .cards {
@@ -505,9 +624,10 @@ const getVisibleList = () => {
   padding-left: 2vw;
   padding-right: 2vw;
   padding-bottom: 3vh;
-  background: #fef7fa;
+  background: linear-gradient(var(--gradient-deg4, 45deg), #f7c1ca, #b1e6b1, #b5b5f3);
   opacity: 0.9;
   transition: all 1.5s;
+  transition: --gradient-deg4 5s linear;
 }
 
 .aside-card1-avatar {
@@ -543,7 +663,6 @@ const getVisibleList = () => {
   color: #5c6669;
 }
 
-/* #endregion */
 .blog-new-title {
   width: 100%;
   display: flex;
@@ -593,5 +712,31 @@ const getVisibleList = () => {
 .btn {
   width: 48%;
   padding: 1.1rem;
+}
+
+/* 移动端适配 */
+.mobile-scroll-to-top {
+  width: 5vh;
+  height: 5vh;
+  line-height: 5vh;
+  opacity: 0.5;
+  right: 2vw;
+}
+
+.mobile-cards {
+  gap: 3vh;
+}
+
+.mobile-card {
+  width: 100%;
+}
+
+.mobile-blog-new-title-name {
+  font-size: 1rem;
+}
+
+.mobile-blog-new-title-right {
+  width: 35%;
+  border-radius: 10px;
 }
 </style>

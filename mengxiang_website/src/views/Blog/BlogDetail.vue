@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, onBeforeMount } from 'vue'
-import { useBlogStore } from '@/stores'
+import { ref, onMounted, onBeforeUnmount, onBeforeMount, onUnmounted } from 'vue'
+import { useBlogStore,useGlobalStore } from '@/stores'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores'
 import axios from '../../axios'
 import type { Comment } from '../../Types/article'
 import BackBtn from '@/components/BackBtn.vue'
 
+const globalStore = useGlobalStore()
 const userStore = useUserStore()
 const blogStore = useBlogStore()
 const bgcTimer = ref(0)
@@ -15,10 +16,12 @@ const deg2 = ref(180)
 const deg3 = ref(270)
 const Love = ref(false)
 const blog = blogStore.blog
+const scroll_top = ref(false)
 const comment = ref('')
 const comment_list = ref<Comment[]>([])
 const avatar_boy = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_boy.png'
 const avatar_gril = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_girl.png'
+const isMobile = globalStore.isMobile
 
 onBeforeMount(() => {
   get_comments()
@@ -100,17 +103,48 @@ const comment_detail = (comment_list: Comment[]) => {
 const back = () => {
   window.history.back()
 }
+const handleScroll = () => {
+  const scrollContainer = document.querySelector('.bgc')
+  if (!scrollContainer) return
+  const scrollPosition = scrollContainer.scrollTop
+  const windowHeight = window.innerHeight
+  scroll_top.value = scrollPosition >= (windowHeight * 0.5)
+}
+onMounted(() => {
+  const scrollContainer = document.querySelector('.bgc')
+  if (scrollContainer) {
+    scrollContainer.addEventListener('scroll', handleScroll)
+  }
+})
+onUnmounted(() => {
+  const scrollContainer = document.querySelector('.bgc')
+  if (scrollContainer) {
+    scrollContainer.removeEventListener('scroll', handleScroll)
+  }
+})
+const scroll_to_top = () => {
+  const scrollContainer = document.querySelector('.bgc')
+  if (scrollContainer) {
+    scrollContainer.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+}
 </script>
 
 <template>
   <div class="bgc"
     :style="{ '--gradient-deg1': `${deg1}deg`, '--gradient-deg2': `${deg2}deg`, '--gradient-deg3': `${deg3}deg`, }">
-    <div class="back">
+    <div class="back" :style="{ 'margin-left': isMobile ? '0' : '2vw' }">
       <BackBtn @click="back"></BackBtn>
     </div>
+    <div class="scroll-top" v-if="scroll_top" @click="scroll_to_top">
+      <i class="iconfont icon-topDouble" style="color: black;font-weight: 900;cursor: pointer;"></i>
+    </div>
     <el-row>
-      <el-col :span="2"></el-col>
-      <el-col :span="20" class="article">
+      <el-col :span="isMobile ? 1 : 2"></el-col>
+      <el-col :span="isMobile ? 22 : 20" class="article">
         <div class="article-title">
           <div class="card-title-name">{{ blog?.title }}</div>
           <div class="card-title-love" @click="isLove"><i class="iconfont icon-dianzan-aixinshixin"
@@ -134,7 +168,7 @@ const back = () => {
           <div class="title"><span>标题：</span>{{ blog?.time }}</div>
           <div class="author"><span>作者：</span>{{ blog?.name }}</div>
           <div class="publish"><span>创建于：</span>{{ blog?.time }}</div>
-          <div class="declare"><span>版权声明：</span>版权所有©梦翔工作室，禁止转载</div>
+          <div class="declare"><span>版权声明：</span>{{ isMobile ? '版权所有©梦翔，禁止转载' : '版权所有©梦翔工作室，禁止转载' }}</div>
         </div>
         <div class="article-comment">
           <div class="article-comment-title">评论</div>
@@ -159,7 +193,7 @@ const back = () => {
           </div>
         </div>
       </el-col>
-      <el-col :span="2"></el-col>
+      <el-col :span="isMobile ? 1 : 2"></el-col>
     </el-row>
   </div>
 </template>
@@ -198,10 +232,26 @@ const back = () => {
   overflow: auto;
 }
 
-.back {
+.scroll-top {
   position: fixed;
-  left: 1vw;
-  top: 2vh;
+  bottom: 5vh;
+  right: 3vw;
+  width: 3vw;
+  height: 3vw;
+  border-radius: 20%;
+  text-align: center;
+  line-height: 3vw;
+  background-color: #d3d8dd;
+  transition: all 0.5s;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.scroll-top:hover {
+  transform: scale(1.2);
+}
+
+.back {
   z-index: 1;
 }
 
@@ -211,7 +261,7 @@ const back = () => {
   padding: 1.5rem;
   background: #ffffff;
   border-radius: 20px;
-  margin-top: 5vh;
+  margin-top: 2vh;
   margin-bottom: 5vh;
 }
 

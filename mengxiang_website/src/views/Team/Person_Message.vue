@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
+import { ref, onBeforeMount } from 'vue';
+import { Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import { useGlobalStore } from '../../stores';
 import { ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import BackBtn from '@/components/BackBtn.vue';
+import type { User } from '../../Types/user'
+import axios from '@/axios'
 
 const drawer_data = ref({})
 const drawer = ref(false)
@@ -27,209 +29,32 @@ const waterfallSettings = ref({
   },
   bgc: 'transparent',
 });
-// 模拟大一成员数据
-const freshmanMembers = ref([
-  {
-    id: 1,
-    name: '邓昕蕊',
-    grade: '大一',
-    direction: '人工智能',
-    gender: '女',
-    tel: '18139870857',
-    school: '福建工业大学',
-    motto: '世间即使多可怕，总留下你依然让我值得牵挂。'
-  },
-  {
-    id: 2,
-    name: '张禹辰',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '17854992863',
-    school: '陕西师范大学',
-    gender: '男',
-    motto: '把自己当傻瓜，不懂就问，你会学的更多。'
-  },
-  {
-    id: 3,
-    name: '侯天昊',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '18729243046',
-    school: '宁夏建筑大学',
-    avatar: 'https://tse4-mm.cn.bing.net/th/id/OIP-C.Al9kr3lhiR0k6LEchmE_1gHaE8?w=245&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7',
-    motto: '世间即使多可怕，总留下你依然让我值得牵挂。'
-  },
-  {
-    id: 4,
-    name: '林磊',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '18352741347',
-    school: '陕西化工大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '把自己当傻瓜，不懂就问，你会学的更多。'
-  },
-  {
-    id: 5,
-    name: '姜若萌',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '13486221248',
-    school: '广东师范大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '在你孤单的时候有人陪伴你，在你失落的时候有人帮助你。幸福就是无论你走到天涯海角，总会有人牵挂你！'
-  },
-  {
-    id: 6,
-    name: '贺桂英',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '15120460859',
-    school: '海南服装学院',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '把自己当傻瓜，不懂就问，你会学的更多。'
-  },
-  {
-    id: 7,
-    name: '雷熙涵',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '19951246387',
-    school: '甘肃化工大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '把自己当傻瓜，不懂就问，你会学的更多。'
-  },
-  {
-    id: 8,
-    name: '于杰',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '19617038778',
-    school: '贵州大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '在你孤单的时候有人陪伴你，在你失落的时候有人帮助你。幸福就是无论你走到天涯海角，总会有人牵挂你！'
-  },
-  {
-    id: 9,
-    name: '卢佳毅',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '14988108827',
-    school: '辽宁理工大学',
-    avatar: 'https://tse3-mm.cn.bing.net/th/id/OIP-C.P8VPK1U9xVLCP9LfDuAVngHaEK?w=324&h=182&c=7&r=0&o=5&dpr=1.3&pid=1.7',
-    motto: '世间即使多可怕，总留下你依然让我值得牵挂。'
-  },
-  {
-    id: 10,
-    name: '叶雨涵',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '15686769877',
-    school: '海南工商大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '把自己当傻瓜，不懂就问，你会学的更多。'
-  },
-  {
-    id: 11,
-    name: '周淑华',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '19779669664',
-    school: '青海医科大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '世间即使多可怕，总留下你依然让我值得牵挂。'
-  },
-  {
-    id: 12,
-    name: '阎凌晶',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '15540050064',
-    school: '江苏农业大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '把自己当傻瓜，不懂就问，你会学的更多。'
-  },
-  {
-    id: 13,
-    name: '熊嘉乐',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '19842151068',
-    school: '海南交通大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '在你孤单的时候有人陪伴你，在你失落的时候有人帮助你。幸福就是无论你走到天涯海角，总会有人牵挂你！'
-  },
-  {
-    id: 14,
-    name: '邱昕蕊',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '19947663286',
-    school: '宁夏科技大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '世间即使多可怕，总留下你依然让我值得牵挂。'
-  },
-  {
-    id: 15,
-    name: '傅萌',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '14791159939',
-    school: '西藏科技大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '在你孤单的时候有人陪伴你，在你失落的时候有人帮助你。幸福就是无论你走到天涯海角，总会有人牵挂你！'
-  },
-  {
-    id: 16,
-    name: '何建政',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '13963529855',
-    school: '重庆建筑大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '把自己当傻瓜，不懂就问，你会学的更多。'
-  },
-  {
-    id: 17,
-    name: '夏晨茜',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '13852037364',
-    school: '重庆工业大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '世间即使多可怕，总留下你依然让我值得牵挂。'
-  },
-  {
-    id: 18,
-    name: '孔伟',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '15876688252',
-    school: '黑龙江交通大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '在你孤单的时候有人陪伴你，在你失落的时候有人帮助你。幸福就是无论你走到天涯海角，总会有人牵挂你！'
-  },
-  {
-    id: 19,
-    name: '林清妍',
-    grade: '大一',
-    direction: '人工智能',
-    tel: '15127742708',
-    school: '青海理工大学',
-    avatar: 'https://dummyimage.com/1000x1000?text=1742897448814',
-    motto: '世间即使多可怕，总留下你依然让我值得牵挂。'
-  },
-]);
-
+const members = ref<User[]>([])
+const freshmanMembers = ref<User[]>([
+])
+onBeforeMount(async () => {
+  // 获取用户信息
+  const res = await axios.get('/user/all')
+  if (res.data.status === 1) {
+    members.value = res.data.message
+    freshmanMembers.value = res.data.message
+    console.log(members.value)
+  }
+})
 const back = () => {
   globalStore.setBackto_enum(true)
   window.history.back()
 }
-
 const click = (event: Event) => {
   const label = (event.target as HTMLLabelElement).textContent?.trim();
+  if (label === '全部') {
+    drop_menu.value = label;
+    freshmanMembers.value = members.value
+    return
+  }
   if (label) {
     drop_menu.value = label;
+    freshmanMembers.value = members.value.filter(member => member.grade === label);
   }
 }
 
@@ -296,9 +121,12 @@ const expand = (num: number) => {
       </span>
       <template #dropdown>
         <el-dropdown-menu>
+          <el-dropdown-item @click="click($event)" divided>20级</el-dropdown-item>
+          <el-dropdown-item @click="click($event)" divided>21级</el-dropdown-item>
           <el-dropdown-item @click="click($event)" divided>22级</el-dropdown-item>
           <el-dropdown-item @click="click($event)" divided>23级</el-dropdown-item>
           <el-dropdown-item @click="click($event)" divided>24级</el-dropdown-item>
+          <el-dropdown-item @click="click($event)" divided>25级</el-dropdown-item>
           <el-dropdown-item @click="click($event)" divided>全部</el-dropdown-item>
         </el-dropdown-menu>
       </template>
@@ -313,15 +141,14 @@ const expand = (num: number) => {
       <template #default="{ item, index }">
         <div :class="{ 'card': !isMobile }" class="card_all" @click="expand(index)">
           <div class="avatar">
-            <LazyImg :url="item.avatar ? item.avatar : item.gender === '男' ? avatar_boy : avatar_gril" class="pic">
-            </LazyImg>
+            <img :src="item.avatar ? item.avatar : item.gender === '男' ? avatar_boy : avatar_gril" class="pic">
           </div>
           <div class="info">
             <h2><i class="iconfont icon-mingziname" style="font-size: 30px; margin-right: 10px;color: skyblue;"></i> {{
               item.name }}
             </h2>
-            <p><i class="iconfont icon-xingbie" style="color: chocolate; margin-right: 10px"></i> {{ item.grade }}</p>
-            <p><i class="iconfont icon-nianji" style="margin-right: 10px"></i> {{ item.school }}</p>
+            <p><i class="iconfont icon-xingbie" style="color: chocolate; margin-right: 10px"></i> {{ item.gender }}</p>
+            <p><i class="iconfont icon-nianji" style="margin-right: 10px"></i> {{ item.grade }}</p>
             <p class="tel-info"><i class="iconfont icon-lianxi" style="color: gray;margin-right: 10px"></i> {{ item.tel
               }} <span class="copy-hint" @click="copy(index, $event)">(复制)</span></p>
             <p><i class="iconfont icon-a-01" style="color: blue;margin-right: 6px"></i> {{ item.motto }}</p>
@@ -345,11 +172,11 @@ const expand = (num: number) => {
         </h2>
         <div class="drawer_gender">
           <p>性别</p>
-          <p style="margin-left:3.5vw;margin-top: 1vh"> {{ (drawer_data as any).grade }}</p>
+          <p style="margin-left:3.5vw;margin-top: 1vh"> {{ (drawer_data as any).gender }}</p>
         </div>
         <div class="drawer_grade">
           <p>年级</p>
-          <p style="margin-left:3.5vw;margin-top: 1vh"> {{ (drawer_data as any).school }}</p>
+          <p style="margin-left:3.5vw;margin-top: 1vh"> {{ (drawer_data as any).grade }}</p>
         </div>
         <div class="drawer_tel">
           <p>联系</p>
@@ -412,12 +239,14 @@ const expand = (num: number) => {
   font-weight: 700;
   font-size: 20px
 }
+
 .el-dropdown-link {
-display: flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
 }
+
 .waterfall_container {
   margin-left: 7vw;
   margin-right: 7vw;
@@ -474,6 +303,7 @@ display: flex;
   color: #409EFF;
   margin-left: 5px;
   opacity: 0.8;
+  cursor: pointer;
 }
 
 /* 抽屉 */

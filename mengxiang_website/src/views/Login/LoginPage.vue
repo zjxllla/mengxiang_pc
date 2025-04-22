@@ -25,8 +25,8 @@ isMobile.value = globalStore.isMobile
 // 注册规则
 const rules = {
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 5, max: 10, message: '用户名必须是5-10位的字符', trigger: 'blur' }
+    { required: true, message: '请输入账号', trigger: 'blur' },
+    { min: 5, max: 15, message: '用户名必须是5-15位的字符', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },

@@ -290,15 +290,17 @@ const mouseleave_link = (num: number) => {
                     <el-carousel indicator-position="outside" :interval="5000" :height="isMobile ? '20vh' : '40vh'"
                       :style="isMobile ? 'width:80vw' : 'width:70vw'">
                       <el-carousel-item v-for="item in 4" :key="item">
-                        <img src="../../assets/main_pic1.jpg" alt=""
-                          style="width: 100%;height: 100%; object-fit: fill;">
+                        <img
+                          src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang%2Fpicture%2Fmain_pic1.jpg"
+                          alt="" style="width: 100%;height: 100%; object-fit: fill;">
                       </el-carousel-item>
                     </el-carousel>
                   </div>
                 </div>
                 <div class="part3-bottom" :class="{ 'mobile-part3-bottom': isMobile }">
                   <div class="part3-box" :class="{ 'mobile-part3-box': isMobile }">
-                    <div class="part3-icon" :style="{ width: isMobile ? '10vw' : '5vw', height: isMobile ? '10vw' : '5vw' }">
+                    <div class="part3-icon"
+                      :style="{ width: isMobile ? '10vw' : '5vw', height: isMobile ? '10vw' : '5vw' }">
                       <img src="../../assets/part3-icon2.png" alt="" class="part3-icon-img"
                         :class="{ 'mobile-part3-icon-img': isMobile }">
                     </div>
@@ -540,7 +542,7 @@ a {
   font-size: 80px;
   font-weight: bold;
   color: #000;
-  background: url('../../assets/main_pic4.jpg') no-repeat center;
+  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic4.jpg') no-repeat center;
   background-size: cover;
 }
 

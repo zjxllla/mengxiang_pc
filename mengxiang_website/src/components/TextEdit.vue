@@ -42,20 +42,18 @@ watch(valueHtml, (newValue) => {
 const toolbarConfig = {
   excludeKeys: [
     'group-video', // 排除视频相关
-    'group-justify', // 排除对齐相关
-    'group-indent', // 排除缩进相关
     'group-more-style', // 排除更多样式
-    'insertTable', // 排除表格
     ...(prop.IsTreeHole ? ['codeBlock'] : []), // 根据IsTreeHole动态排除
+    ...(prop.IsTreeHole ? ['insertTable'] : []), // 根据IsTreeHole动态排除
+    ...(prop.IsTreeHole ? ['group-justify'] : []), // 根据IsTreeHole动态排除
+    ...(prop.IsTreeHole ? ['group-indent'] : []), // 根据IsTreeHole动态排除
     'divider', // 排除分割线
     'emotion', // 排除表情
     'insertLink', // 排除链接
     'todo', // 排除待办
     'blockquote', // 排除引用
     'headerSelect', // 排除标题选择
-    'fontSize', // 排除字号
     'fontFamily', // 排除字体
-    'lineHeight', // 排除行高
     'bulletedList', // 排除无序列表
     'numberedList', // 排除有序列表
     'insertFormula', // 排除公式
