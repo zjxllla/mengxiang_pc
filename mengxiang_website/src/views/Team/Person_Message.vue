@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onBeforeMount } from 'vue';
+import { ref, onBeforeMount, onMounted, onBeforeUnmount } from 'vue';
 import { Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
 import { useGlobalStore } from '../../stores';
@@ -8,9 +8,15 @@ import { ElMessage } from 'element-plus'
 import BackBtn from '@/components/BackBtn.vue';
 import type { User } from '../../Types/user'
 import axios from '@/axios'
+import { baseURL } from '../../axios'
 
 const drawer_data = ref({})
 const drawer = ref(false)
+const start_time = ref(0)
+const end_time = ref(0)
+const stay_time = ref(0)
+const letter = "Mengxiang  Mengxiang  Mengxiang  Mengxiang  Mengxiang  Mengxiang".split('')
+const bgc_timer = ref<number | null>(null)
 
 const globalStore = useGlobalStore();
 const isMobile = ref(globalStore.isMobile);
@@ -40,6 +46,24 @@ onBeforeMount(async () => {
     freshmanMembers.value = res.data.message
     console.log(members.value)
   }
+
+  // 网站访问量更新
+  await axios.get('/ip/get')
+  start_time.value = Math.floor(+new Date() / 1000)
+  window.addEventListener('beforeunload', () => {
+    end_time.value = Math.floor(+new Date() / 1000)
+    stay_time.value = end_time.value - start_time.value
+    // 上传访问量
+    const analyticsData = {
+      time: stay_time.value,
+      startTime: start_time.value
+    };
+    const blob = new Blob([JSON.stringify(analyticsData)], {
+      type: 'application/json; charset=UTF-8'
+    });
+    navigator.sendBeacon(`${baseURL}/visit/set`, blob);
+  })
+
 })
 const back = () => {
   globalStore.setBackto_enum(true)
@@ -108,6 +132,43 @@ const expand = (num: number) => {
   drawer.value = true
   drawer_data.value = freshmanMembers.value[num]
 }
+
+let canvas: HTMLCanvasElement;
+let ctx: any;
+const drops: number[] = []
+const font_size = 10
+const colors = ['#05FF00', '#00BFFF', '#FF4500', '#FFA500', '#C202C2'];
+let color: string;
+onMounted(() => {
+  canvas = document.getElementById('myCanvas') as HTMLCanvasElement;
+  ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  color = colors[Math.floor(Math.random() * colors.length)]
+  const columns = canvas.width / font_size;
+  for (let i = 0; i < columns; i++) {
+    drops[i] = 1;
+  }
+  bgc_timer.value = window.setInterval(draw_background, 30);
+})
+const draw_background = () => {
+  ctx.fillStyle = 'rgba(0,0,0,.1)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = color
+  for (let i = 0; i < drops.length; i++) {
+    const text = letter[Math.floor(Math.random() * letter.length)]
+    ctx.fillText(text, i * font_size, drops[i] * font_size);
+    drops[i]++
+    if (drops[i] * font_size > canvas.height && Math.random() > 0.95) {
+      drops[i] = 0;
+    }
+  }
+}
+onBeforeUnmount(() => {
+  if (bgc_timer.value !== null && bgc_timer.value !== undefined) {
+    clearInterval(bgc_timer.value as number)
+  }
+})
 </script>
 
 <template>
@@ -132,7 +193,7 @@ const expand = (num: number) => {
       </template>
     </el-dropdown>
   </div>
-  <div class="bgc"></div>
+  <canvas id="myCanvas" class="canvas"></canvas>
 
   <div class="waterfall_container">
     <div class="title">成员信息</div>
@@ -150,7 +211,7 @@ const expand = (num: number) => {
             <p><i class="iconfont icon-xingbie" style="color: chocolate; margin-right: 10px"></i> {{ item.gender }}</p>
             <p><i class="iconfont icon-nianji" style="margin-right: 10px"></i> {{ item.grade }}</p>
             <p class="tel-info"><i class="iconfont icon-lianxi" style="color: gray;margin-right: 10px"></i> {{ item.tel
-              }} <span class="copy-hint" @click="copy(index, $event)">(复制)</span></p>
+            }} <span class="copy-hint" @click="copy(index, $event)">(复制)</span></p>
             <p><i class="iconfont icon-a-01" style="color: blue;margin-right: 6px"></i> {{ item.motto }}</p>
           </div>
         </div>
@@ -262,6 +323,18 @@ const expand = (num: number) => {
   border-radius: 10px;
   overflow: hidden;
   transition: transform 0.3s ease-in-out;
+}
+
+#myCanvas {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  left: 0%;
+  top: 0%;
+  right: 0%;
+  bottom: 0%;
+  display: block;
+  z-index: 0;
 }
 
 @media (hover:hover) and (pointer:fine) {

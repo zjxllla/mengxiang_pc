@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, onBeforeMount, watch, nextTick, onUnmounted } from 'vue'
 import { ArrowRightBold } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, imageEmits } from 'element-plus'
 import TextEdit from '@/components/TextEdit.vue'
 import { useGlobalStore, useBlogStore, useUserStore } from '../../stores'
+import { baseURL } from '../../axios'
 import axios from '../../axios'
-import type { blog } from '../../Types/article'
+import type { blog, like } from '../../Types/article'
 
 const userStore = useUserStore()
 const globalStore = useGlobalStore()
@@ -33,7 +34,8 @@ const user_info = ref({
   grade: '',
   tel: '',
   motto: '',
-  avatar: ''
+  avatar: '',
+  nickname: '',
 })
 const user = ref('')
 const blog_list = ref<blog[]>([])
@@ -41,8 +43,12 @@ const visible_index = ref<string[]>(['0', '1', '2'])
 const visible_list = ref<blog[]>([])
 const observer = ref<IntersectionObserver | null>(null)
 const isMobile = globalStore.isMobile
+const start_time = ref(0)
+const end_time = ref(0)
+const stay_time = ref(0)
+const loved_list = ref<like[]>([])
 
-onBeforeMount(async () => {
+const beforeFn = async () => {
   // 自动登录
   if (globalStore.token !== '') {
     const res2 = await axios.post('/auto_login', {}, { headers: { 'Content-Type': 'application/json', 'Authorization': globalStore.token } })
@@ -63,19 +69,81 @@ onBeforeMount(async () => {
   } else {
     isLogin.value = false
   }
+  console.log('user', user.value)
+  if (user.value) {
+    getLoveList()
+  }
   // 获取博客文章
   get_blog()
+}
+
+onBeforeMount(() => {
+  beforeFn()
 })
-onMounted(() => {
+
+onMounted(async () => {
+  // 更新网站访问量
+  await axios.get('/ip/get')
+  start_time.value = Math.floor(+new Date() / 1000)
   // 背景动画
   setTimeout(() => {
     bgcAnimation()
   }, 0)
-  bgcTimer.value = setInterval(() => {
+  bgcTimer.value = window.setInterval(() => {
     bgcAnimation()
   }, 5000)
+  window.addEventListener('beforeunload', () => {
+    end_time.value = Math.floor(+new Date() / 1000)
+    stay_time.value = end_time.value - start_time.value
+    // 上传访问量
+    const analyticsData = {
+      time: stay_time.value,
+      startTime: start_time.value
+    };
+    const blob = new Blob([JSON.stringify(analyticsData)], {
+      type: 'application/json; charset=UTF-8'
+    });
+    navigator.sendBeacon(`${baseURL}/visit/set`, blob);
+  })
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState === "visible") {
+      const globalStr = localStorage.getItem('global')
+      let token = ''
+      if (globalStr) {
+        try {
+          const globalObj = JSON.parse(globalStr)
+          token = globalObj.token || ''
+        } catch (e) {
+          token = ''
+          console.log(e)
+        }
+      }
+      if (token !== '') {
+        const res2 = await axios.post('/auto_login', {}, { headers: { 'Content-Type': 'application/json', 'Authorization': token } })
+        if (res2.data.status === 1) {
+          user.value = res2.data.message.account
+          await get_number()
+          const res3 = await axios.get('/user/info', { params: { account: user.value } })
+          if (res3.data.status === 1) {
+            user_info.value = res3.data.message
+            user_info.value.avatar = user_info.value.avatar ? user_info.value.avatar : user_info.value.gender === '男' ? avatar_boy : avatar_gril
+            user_info.value.motto = user_info.value.motto ? user_info.value.motto : '这个人很懒，什么都没留下'
+            user_info.value.tel = user_info.value.tel ? user_info.value.tel : '未填写'
+            isLogin.value = true
+          }
+        } else {
+          isLogin.value = false
+        }
+      } else {
+        isLogin.value = false
+      }
+    } else {
+      console.log("页面隐藏（用户切换标签或最小化窗口）");
+    }
+  });
 })
-watch(blog_list, async (newValue) => {
+
+watch(blog_list, (newValue) => {
   Love.value = []
   newValue.forEach(() => {
     Love.value.push(false)
@@ -100,19 +168,38 @@ const bgcAnimation = () => {
   document.documentElement.style.setProperty('--color2', colors.value[1])
   document.documentElement.style.setProperty('--color3', colors.value[2])
 }
+
+const getLoveList = async () => {
+  const { data } = await axios.get('/hole/like', { params: { account: user.value } })
+  if (data.status === 1) {
+    const message = data.message
+    const filterMessage = message.filter((item: like) => Number(item.target_type) === 2 && Number(item.is_canceled) === 0)
+    console.log('filterMessage', filterMessage)
+    loved_list.value = filterMessage
+  }
+}
 const isLove = async (index: number) => {
-  Love.value[index] = !Love.value[index]
-  if (Love.value[index]) {
-    const res = await axios.post('/blog/like', { account: user_info.value.account, title: blog_list.value[index].title, like: 1 })
+  const love = !loved_list.value.some(item => item.target_id === blog_list.value[index].id)
+  if (love) {
+    const res = await axios.post('/blog/like', { account: blog_list.value[index].account, title: blog_list.value[index].title, like: 1, target_id: blog_list.value[index].id })
     if (res.data.status === 1) {
       ElMessage.success(res.data.message)
+      loved_list.value.push({
+        id: 0,
+        user_id: user.value,
+        target_type: 2,
+        target_id: blog_list.value[index].id,
+        created_at: '',
+        is_canceled: 0
+      })
     } else {
       ElMessage.error(res.data.message)
     }
   } else {
-    const res = await axios.post('/blog/like', { account: user_info.value.account, title: blog_list.value[index].title, like: -1 })
+    const res = await axios.post('/blog/like', { account: blog_list.value[index].account, title: blog_list.value[index].title, like: -1, target_id: blog_list.value[index].id })
     if (res.data.status === 1) {
       ElMessage.warning('取消点赞')
+      loved_list.value = loved_list.value.filter(item => item.target_id !== blog_list.value[index].id)
     } else {
       ElMessage.error('取消失败')
     }
@@ -122,9 +209,8 @@ const ToLogin = () => {
   window.location.href = '/login'
 }
 const DetailArticle = (index: number) => {
-  console.log(blog_list)
   blogStore.setBlog(blog_list.value[index])
-  blogStore.setLove(Love.value[index])
+  blogStore.setLove(loved_list.value.some(item => item.target_id === blog_list.value[index].id))
   userStore.set_account(user_info.value.account)
   window.location.href = '/blog/detail'
 }
@@ -155,7 +241,7 @@ const get_blog = async () => {
     blog_list.value.forEach(async (item) => {
       const res2 = await axios.get('/user/info', { params: { account: item.account } })
       if (res2.data.status === 1) {
-        item.name = res2.data.message.name
+        item.name = res2.data.message.nickname || res2.data.message.name
         item.avatar = res2.data.message.avatar ? res2.data.message.avatar : res2.data.message.gender === '男' ? avatar_boy : avatar_gril
       }
     })
@@ -239,7 +325,6 @@ const initObserver = () => {
           visible_index.value = [...new Set([...visible_index.value, target.id])]
         }
       }
-      console.log(visible_index.value)
       getVisibleList()
     })
   }, {
@@ -302,23 +387,35 @@ const back = () => {
   globalStore.setBackto_enum(true)
   window.history.back()
 }
+
+const to_user = () => {
+  window.location.href = '/user/center'
+}
+
+const to_home = () => {
+  window.location.href = '/'
+}
 </script>
 
 <template>
   <div class="bgc"
     :style="{ '--gradient-deg1': `${deg1}deg`, '--gradient-deg2': `${deg2}deg`, '--gradient-deg3': `${deg3}deg`, }">
-    <div class="scroll-top" v-if="scroll_top" @click="scroll_to_top" :class="{ 'mobile-scroll-to-top': isMobile }">
-      <i class="iconfont icon-topDouble" style="color: black;font-weight: 900;cursor: pointer;"></i>
-    </div>
+    <transition name="fade">
+      <div class="scroll-top" v-if="scroll_top" @click="scroll_to_top" :class="{ 'mobile-scroll-to-top': isMobile }">
+        <i class="iconfont icon-topDouble" style="color: black;font-weight: 900;cursor: pointer;"></i>
+      </div>
+    </transition>
     <!-- top顶部 -->
     <el-row class="top" :style="{ '--color1': `${colors[0]}`, '--color2': `${colors[1]}`, 'color3': `${colors[2]}` }">
       <div class="top-title">
         <img src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang%2Fpicture%2Ficon.png" alt=""
-          style="margin-right: 1vw;" :style="{ width: isMobile ? '4.5vh' : '3.5vw' }" />
+          style="margin-right: 1vw;cursor: pointer;" :style="{ width: isMobile ? '4.5vh' : '3.5vw' }"
+          @click="to_home" />
         <div>梦翔博客</div>
       </div>
       <div class="top-user-info" v-if="isLogin">
-        <div class="top-name"><i class="iconfont icon-mingzi" style="margin-right: 0.5vw;"></i>{{ user_info.name }}
+        <div class="top-name" @click="to_user"><i class="iconfont icon-mingzi" style="margin-right: 0.5vw;"></i>
+          {{ user_info.nickname || user_info.name }}
         </div>
         <div class="top-submit" @click="new_edit"><i class="iconfont icon-fabu1" style="margin-right: 0.5vw;"></i>发布
         </div>
@@ -345,7 +442,7 @@ const back = () => {
           <div class="card-title">
             <div class="card-title-name" @click="DetailArticle(index)">{{ item.title }}</div>
             <div class="card-title-love" @click="isLove(index)"><i class="iconfont icon-dianzan-aixinshixin"
-                :style="{ color: Love[index] ? 'red' : '#8c8c8f' }"></i></div>
+                :style="{ color: loved_list.some(love => love.target_id === item.id) ? 'red' : '#8c8c8f' }"></i></div>
           </div>
           <div class="card-content">{{ item.introduction }}</div>
           <div class="card-bottom">
@@ -361,7 +458,7 @@ const back = () => {
       </el-col>
       <el-col :span="4" class="aside-cards" v-if="!isMobile">
         <div class="aside-card1" :style="{ '--gradient-deg4': `${deg4}deg` }">
-          <div class=aside-card1-avatar v-if="isLogin">
+          <div class=aside-card1-avatar v-if="isLogin" @click="to_user">
             <img :src='user_info.avatar' alt="" style="height: 15vh;border-radius: 20px;" />
           </div>
           <div class="aside-card1-avatar" v-else>
@@ -444,6 +541,22 @@ const back = () => {
   initial-value: #8282eb;
 }
 
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease-in-out;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  overflow: hidden;
+}
+
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+}
+
 .bgc {
   width: 100%;
   height: 100%;
@@ -518,14 +631,19 @@ const back = () => {
   color: #fff;
 }
 
-.top-login-icon {
+.top-name,
+.top-login-icon,
+.top-submit {
   cursor: pointer;
+  transition: all .3s;
 }
+
 
 .top-submit {
   cursor: pointer;
 }
 
+.top-name:hover,
 .top-submit:hover,
 .top-login-icon:hover {
   color: #0505f3;
@@ -637,6 +755,7 @@ const back = () => {
   width: 100%;
   max-height: 20vh;
   margin: 0 auto;
+  cursor: pointer;
 }
 
 .aside-card1-detail {

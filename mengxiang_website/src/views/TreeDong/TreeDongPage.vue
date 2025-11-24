@@ -2,13 +2,14 @@
 import { Moon, Sunny } from '@element-plus/icons-vue';
 import { ref, onBeforeMount, watch, nextTick, onUnmounted, onMounted } from 'vue';
 import axios from 'axios';
+import { baseURL } from '../../axios';
 import BackBtn from '@/components/BackBtn.vue';
 import { useGlobalStore } from '../../stores'
 import { ElMessageBox } from 'element-plus'
 import TextEdit from '@/components/TextEdit.vue';
 import Myaxios from '../../axios';
 import { ElMessage } from 'element-plus'
-import type { article } from '../../Types/article'
+import type { article, like } from '../../Types/article'
 
 const avatar_boy = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_boy.png'
 const avatar_gril = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_girl.png'
@@ -19,10 +20,10 @@ const top_text = ref('')
 const isDark_animation = ref(false)
 const isAnimating_sun = ref(false);  // 新增动画状态
 const isAnimating_dark = ref(false);  // 新增动画状态
-const is_praise = ref<boolean[]>([])
 const is_commment = ref<boolean[]>([])
 const avatarLoading = ref(true) // 添加头像加载状态
 const user = ref('')
+const likes_list = ref<like[]>([])
 const article_title = ref('')
 const comment_text = ref('')
 const isLogin = ref(false)
@@ -34,7 +35,8 @@ const user_info = ref({
   grade: '',
   tel: '',
   motto: '',
-  avatar: ''
+  avatar: '',
+  nickname: ''
 })
 const article_list = ref<article[]>([])
 const original_article = ref({
@@ -56,11 +58,31 @@ const drawer = ref(false);
 const drawer_new = ref(false)
 const new_article = ref('')
 const scroll_top = ref(false)
+const start_time = ref(0)
+const end_time = ref(0)
+const stay_time = ref(0)
 
-onBeforeMount(async () => {
+const beforeMount_fn = async () => {
+  // 网站访问量更新
+  axios.get('/ip/get').catch(err => console.error('Failed to get IP:', err))
+  start_time.value = Math.floor(+new Date() / 1000)
+  window.addEventListener('beforeunload', () => {
+    end_time.value = Math.floor(+new Date() / 1000)
+    stay_time.value = end_time.value - start_time.value
+    // 上传访问量
+    const analyticsData = {
+      time: stay_time.value,
+      startTime: start_time.value
+    };
+    const blob = new Blob([JSON.stringify(analyticsData)], {
+      type: 'application/json; charset=UTF-8'
+    });
+    navigator.sendBeacon(`${baseURL}/visit/set`, blob);
+  })
   // 获取一言
-  const res1 = await axios.get('https://v1.hitokoto.cn/')
-  top_text.value = res1.data.hitokoto + '------《' + res1.data.from + '》'
+  axios.get('https://v1.hitokoto.cn/').then((res) => {
+    top_text.value = res.data.hitokoto + '------《' + res.data.from + '》'
+  })
   // 自动登录
   if (globalStore.token !== '') {
     const res2 = await Myaxios.post('/auto_login', {}, { headers: { 'Content-Type': 'application/json', 'Authorization': globalStore.token } })
@@ -72,6 +94,7 @@ onBeforeMount(async () => {
         user_info.value.avatar = user_info.value.avatar ? user_info.value.avatar : user_info.value.gender === '男' ? avatar_boy : avatar_gril
         user_info.value.motto = user_info.value.motto ? user_info.value.motto : '这个人很懒，什么都没留下'
         user_info.value.tel = user_info.value.tel ? user_info.value.tel : '未填写'
+        console.log(user_info.value)
         isLogin.value = true
         // 预加载头像
         preloadAvatar()
@@ -82,17 +105,31 @@ onBeforeMount(async () => {
   } else {
     isLogin.value = false
   }
+  if (user_info.value) {
+    getLikesList()
+  }
   // 获取文章列表
   await getArticleList()
   article_list.value.reverse()
   dealTime(article_list.value as unknown as article[])
+}
+
+onBeforeMount(() => {
+  beforeMount_fn()
 })
+
 watch(article_list, (newValue) => {
   is_commment.value = []
   newValue.forEach(() => {
     is_commment.value.push(false)
   })
 })
+
+// 前往用户页
+const to_user = () => {
+  window.location.href = '/user/center'
+}
+
 const to_black = () => {
   isAnimating_sun.value = true;  // 开始动画
   isDark_animation.value = true
@@ -117,17 +154,39 @@ const to_white = () => {
     isAnimating_dark.value = false;
   }, 1000);
 }
+
+const getLikesList = async () => {
+  const { data } = await Myaxios.get('/hole/like', { params: { account: user.value } })
+  if (data.status === 1) {
+    const message = data.message
+    const filterMessage = message.filter((item: like) => Number(item.target_type) === 1 && Number(item.is_canceled) === 0)
+    console.log('filterMessage', filterMessage)
+    likes_list.value = filterMessage
+  }
+}
 const onPraise = async (praise: boolean, index: number) => {
+  if (!isLogin.value) {
+    ElMessage.warning('请先登录')
+    return
+  }
   if (praise) {
     const res1 = await Myaxios.post('/hole/like', {
       account: article_list.value[index].account,
       title: article_list.value[index].title,
+      target_id: article_list.value[index].id,
       like: 1
     })
     if (res1.data.status === 1) {
-      ElMessage.success(res1.data.message)
+      ElMessage.success('点赞成功')
+      likes_list.value.push({
+        id: 0,
+        user_id: user.value,
+        target_type: 1,
+        target_id: article_list.value[index].id,
+        created_at: '',
+        is_canceled: 0
+      })
       article_list.value[index].like_num++
-      is_praise.value[index] = true
     } else {
       ElMessage.error(res1.data.message)
     }
@@ -135,12 +194,13 @@ const onPraise = async (praise: boolean, index: number) => {
     const res2 = await Myaxios.post('/hole/like', {
       account: article_list.value[index].account,
       title: article_list.value[index].title,
-      like: 1
+      target_id: article_list.value[index].id,
+      like: -1
     })
     if (res2.data.status === 1) {
       ElMessage.warning('取消点赞')
+      likes_list.value = likes_list.value.filter((item: like) => item.target_id !== article_list.value[index].id)
       article_list.value[index].like_num--
-      is_praise.value[index] = false
     } else {
       ElMessage.error('取消失败')
     }
@@ -165,6 +225,8 @@ const handleClose = (done: () => void) => {
       // catch error
     })
 }
+
+//  发布文章
 const SubmitArticle = async () => {
   if (!new_article.value) return
   // 创建临时DOM元素解析HTML
@@ -224,12 +286,11 @@ const getArticleList = async () => {
     await nextTick()
     initObserver()
     article_list.value.forEach(async (item) => {
-      is_praise.value.push(false)
       const account = item.account
       const res = await Myaxios.get('/user/info', { params: { account: account } })
       if (res.data.status === 1) {
         item.avatar = res.data.message.avatar ? res.data.message.avatar : res.data.message.gender === '男' ? avatar_boy : avatar_gril
-        item.name = res.data.message.name
+        item.name = res.data.message.nickname || res.data.message.name
       }
     })
   }
@@ -263,7 +324,7 @@ const getComment = async (id: number) => {
       const res1 = await Myaxios.get('/user/info', { params: { account: account } })
       if (res1.data.status === 1) {
         item.avatar = res1.data.message.avatar ? res1.data.message.avatar : res1.data.message.gender === '男' ? avatar_boy : avatar_gril
-        item.name = res1.data.message.name
+        item.name = res1.data.message.nickname || res1.data.message.name
       }
     })
     dealTime(comment_list.value as unknown as article[])
@@ -351,6 +412,44 @@ onMounted(() => {
   if (scrollContainer) {
     scrollContainer.addEventListener('scroll', handleScroll)
   }
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState === "visible" && user_info.value.account === '') {
+      const globalStr = localStorage.getItem('global')
+      let token = ''
+      if (globalStr) {
+        try {
+          const globalObj = JSON.parse(globalStr)
+          token = globalObj.token || ''
+        } catch (e) {
+          token = ''
+          console.log(e)
+        }
+      }
+      if (token !== '') {
+        const res2 = await Myaxios.post('/auto_login', {}, { headers: { 'Content-Type': 'application/json', 'Authorization': token } })
+        if (res2.data.status === 1) {
+          user.value = res2.data.message.account
+          const res3 = await Myaxios.get('/user/info', { params: { account: user.value } })
+          if (res3.data.status === 1) {
+            user_info.value = res3.data.message
+            user_info.value.avatar = user_info.value.avatar ? user_info.value.avatar : user_info.value.gender === '男' ? avatar_boy : avatar_gril
+            user_info.value.motto = user_info.value.motto ? user_info.value.motto : '这个人很懒，什么都没留下'
+            user_info.value.tel = user_info.value.tel ? user_info.value.tel : '未填写'
+            console.log(user_info.value)
+            isLogin.value = true
+            // 预加载头像
+            preloadAvatar()
+          }
+        } else {
+          isLogin.value = false
+        }
+      } else {
+        isLogin.value = false
+      }
+    } else {
+      console.log("页面隐藏（用户切换标签或最小化窗口）");
+    }
+  });
 })
 onUnmounted(() => {
   const scrollContainer = document.querySelector('.body')
@@ -371,21 +470,28 @@ const scroll_to_top = () => {
 const ToLogin = () => {
   window.location.href = '/login'
 }
+const to_home = () => {
+  window.location.href = '/'
+}
 </script>
 
 <template>
   <div class="bgc_w body">
     <!-- 滑至顶部按钮 -->
-    <div class="scroll-top" v-if="scroll_top" @click="scroll_to_top" :class="{ 'mobile-scroll-top': isMobile }">
-      <i class="iconfont icon-topDouble" style="color: black;font-weight: 900;cursor: pointer;"></i>
-    </div>
+    <transition name="fade">
+      <div class="scroll-top" v-if="scroll_top" @click="scroll_to_top" :class="{ 'mobile-scroll-top': isMobile }">
+        <i class="iconfont icon-topDouble" style="color: black;font-weight: 900;cursor: pointer;"></i>
+      </div>
+    </transition>
+
     <!-- 顶部 -->
     <el-row class="top">
       <el-col :span="1"></el-col>
       <el-col :span="22" class="top-content">
         <div class="top-icon">
           <img src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang%2Fpicture%2Ficon.png" alt=""
-            style="width: 4vw;margin-right: 1vw;" :class="{ 'mobile-top-icon-img': isMobile }" />
+            style="width: 4vw;margin-right: 1vw;cursor: pointer;" :class="{ 'mobile-top-icon-img': isMobile }"
+            @click="to_home" loading="lazy" />
           <div :style="{ fontSize: isMobile ? '30px' : '2vw' }">梦翔树洞</div>
         </div>
         <div class="top-saying" v-if="!isMobile">
@@ -435,7 +541,7 @@ const ToLogin = () => {
           v-for="(item, index) in visible_list" :key="item.id" :id="String(index)"
           :class="{ 'mobile-main-card': isMobile }">
           <div class="card-top">
-            <div class="card-avatar"> <img :src="item.avatar" alt="" class="card-avatar-img"> </div>
+            <div class="card-avatar"> <img :src="item.avatar" alt="" class="card-avatar-img" loading="lazy"> </div>
             <div class="card-top-aside">
               <div class="top-name">{{ item.name }}</div>
               <div class="top-time" :style="{ color: isDark_animation ? '#ccd0db' : '#4b5563' }">{{ item.time }}</div>
@@ -446,21 +552,22 @@ const ToLogin = () => {
               <span href="#" :style="{ color: isDark_animation ? '#b4c6fa' : '#0866fe' }">@{{ item.title }}</span>
             </div>
             <div class="body-text" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }" v-html="item.content"
-              :class="{'mobile-body-text':isMobile}">
+              :class="{ 'mobile-body-text': isMobile }">
             </div>
             <div class="body-img" v-if="item.image">
-              <img :src="item.image" alt="" style="width: 30%;">
+              <img :src="item.image" alt="" style="width: 30%;" loading="lazy">
             </div>
 
           </div>
           <div class="card-bottom">
             <div class="bottom-icons">
-              <div class="praise" v-if="!is_praise[index]" @click="onPraise(true, index)">
-                <i class="iconfont icon-dianzan"></i> 点赞
-              </div>
-              <div class="praise" v-if="is_praise[index]" @click="onPraise(false, index)">
+              <div class="praise" v-if="likes_list.some(like => like.target_id === item.id)"
+                @click="onPraise(false, index)">
                 <i class="iconfont icon-dianzan" style="font-weight: 700;transition: all 1.5s;"
                   :style="{ color: isDark_animation ? 'skyblue' : 'blue' }"></i> {{ item.like_num }}
+              </div>
+              <div class="praise" @click="onPraise(true, index)" v-else>
+                <i class="iconfont icon-dianzan"></i> 点赞
               </div>
               <div class="original-text" @click="onOrginal(index, item.id)">
                 <i class="iconfont icon-yuanwenlianjie" style="font-size: 12px;font-weight: 200;"></i> &nbsp;原文
@@ -474,7 +581,7 @@ const ToLogin = () => {
                 <textarea type="text" style="min-height: 20vh;width: 100%;" class="comment-textarea"
                   placeholder="你的评论可以一针见血!" v-model="comment_text"></textarea>
                 <div class="comment-buttons">
-                  <el-button round type="danger" :style="{width: isMobile?'20vw':'10vw'}"
+                  <el-button round type="danger" :style="{ width: isMobile ? '20vw' : '10vw' }"
                     @click="is_commment[index] = false">取消</el-button>
                   <el-button round type="primary" :style="{ width: isMobile ? '20vw' : '10vw' }"
                     @click="submit_comment(item.id)">提交</el-button>
@@ -487,7 +594,8 @@ const ToLogin = () => {
       <el-col :span="6" class="main-aside" v-if="!isMobile">
         <div class="aside-card1" :style="{ background: isDark_animation ? '#374151' : '#fff' }">
           <div class="aside-card1-top" v-if="isLogin">
-            <div class="card1-avatar" :style="{ 'border-color': isDark_animation ? '#374151' : '#fff' }">
+            <div class="card1-avatar" :style="{ 'border-color': isDark_animation ? '#374151' : '#fff' }"
+              @click="to_user">
               <!-- 加载动画 -->
               <div v-if="avatarLoading" class="avatar-loading">
                 <div class="avatar-loading-spinner"></div>
@@ -506,7 +614,7 @@ const ToLogin = () => {
           </div>
           <div class="aside-card1-bottom" v-if="isLogin">
             <div class="card1-bottom-name" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }">{{
-              user_info.name
+              user_info.nickname || user_info.name
               }}</div>
             <div class="card1-bottom-text" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }">
               {{ user_info.motto }}</div>
@@ -536,14 +644,15 @@ const ToLogin = () => {
         <div class="drawer-top">
           <div class="drawer-top-avatar">
             <img :src="original_article.avatar" alt=""
-              style="width: 100%;height: 100%;object-fit: fill; border-radius: 15%;">
+              style="width: 100%;height: 100%;object-fit: fill; border-radius: 15%;" loading="lazy">
           </div>
           <div class="drawer-top-name">{{ original_article.name }}</div>
           <div class="drawer-top-time" :style="{ color: isDark_animation ? '#ccd0db' : '#4b5563' }">
             {{ original_article.time }}</div>
-          <div class="drawer-top-love" @click="onPraise(!is_praise[original_article_index], original_article_index)">
+          <div class="drawer-top-love"
+            @click="onPraise(!likes_list.some(item => item.target_id === article_list[original_article_index].id), original_article_index)">
             <i class="iconfont icon-dianzan-aixinshixin" style="font-size: 30px;"
-              :style="{ color: is_praise[original_article_index] ? 'red' : 'gray' }"></i>
+              :style="{ color: likes_list.some(item => item.target_id === article_list[original_article_index].id) ? 'red' : 'gray' }"></i>
           </div>
         </div>
         <div class="drawer-body">
@@ -552,7 +661,7 @@ const ToLogin = () => {
           </div>
           <div class="drawer-body-text" v-html="original_article.content"></div>
           <div class="body-img" v-if="original_article.image">
-            <img :src="original_article.image" alt="" style="width: 70%;">
+            <img :src="original_article.image" alt="" style="width: 70%;" loading="lazy">
           </div>
         </div>
         <div class="drawer-send-comment">
@@ -570,8 +679,8 @@ const ToLogin = () => {
           <div class="drawer-bottom-title">评论列表</div>
           <div class="drawer-comment-card" v-for="(item, index) in comment_list" :key='index'>
             <div class="drawer-comment-avatar">
-              <img :src="item.avatar"
-                style="width: 100%;height: 100%;object-fit: fill; border-radius: 50% 50% 50% 50%;">
+              <img :src="item.avatar" style="width: 100%;height: 100%;object-fit: fill; border-radius: 50% 50% 50% 50%;"
+                loading="lazy">
             </div>
             <div class="drawer-comment-context" :style="{ background: isDark_animation ? '#374151' : '#fff' }">
               <div class="drawer-context-title">
@@ -627,7 +736,7 @@ const ToLogin = () => {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: all 0.5s ease-in-out;
+  transition: all 0.3s ease-in-out;
   overflow: hidden;
 }
 
@@ -969,6 +1078,7 @@ const ToLogin = () => {
   transition: all 1.5s;
   overflow: hidden;
   position: relative;
+  cursor: pointer;
 }
 
 .card1-avatar-login {
@@ -1314,7 +1424,8 @@ const ToLogin = () => {
   padding-left: 7vw !important;
   padding-right: 7vw !important;
 }
-.mobile-body-text{
+
+.mobile-body-text {
   min-height: 8vh !important;
 }
 </style>

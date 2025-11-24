@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, onBeforeMount, onUnmounted } from 'vue'
-import { useBlogStore,useGlobalStore } from '@/stores'
+import { useBlogStore, useGlobalStore, useUserStore } from '@/stores'
 import { ElMessage } from 'element-plus'
-import { useUserStore } from '@/stores'
+import { baseURL } from '../../axios'
 import axios from '../../axios'
-import type { Comment } from '../../Types/article'
+import type { Comment, blog } from '../../Types/article'
 import BackBtn from '@/components/BackBtn.vue'
 
 const globalStore = useGlobalStore()
@@ -15,26 +15,70 @@ const deg1 = ref(90)
 const deg2 = ref(180)
 const deg3 = ref(270)
 const Love = ref(false)
-const blog = blogStore.blog
+const blog = ref(blogStore.blog)
 const scroll_top = ref(false)
 const comment = ref('')
 const comment_list = ref<Comment[]>([])
 const avatar_boy = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_boy.png'
 const avatar_gril = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_girl.png'
 const isMobile = globalStore.isMobile
+const start_time = ref(0)
+const end_time = ref(0)
+const stay_time = ref(0)
+const need_file = ref(false)
 
-onBeforeMount(() => {
+onBeforeMount(async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // 获取特定参数
+  const type = urlParams.get('type');
+  if (type === 'ask') {
+    let blog_message = {} as blog
+    const res = await axios.get('/blog/get_by_id', { params: { id: 10 } })
+    if (res.data.status === 1) {
+      blog_message = res.data.message
+      const res1 = await axios.get('/user/info', { params: { account: res.data.message.account } })
+      if (res1.data.status === 1) {
+        blog_message.avatar = res1.data.message.avatar ? res1.data.message.avatar : res1.data.message.gender === '男' ? avatar_boy : avatar_gril
+        blog_message.name = res1.data.message.nickname || res1.data.message.name
+        blogStore.setBlog(blog_message)
+        blog.value = blog_message
+      }
+    }
+  }
   get_comments()
-  Love.value = blogStore?.isLove
+  Love.value = blogStore?.isLove || false
+  if (blog.value?.id === 10) {
+    need_file.value = true
+  } else {
+    need_file.value = false
+  }
 })
-onMounted(() => {
+onMounted(async () => {
+  // 更新网站访问量
+  axios.get('/ip/get').catch(err => console.error('Failed to get IP:', err))
+  start_time.value = Math.floor(+new Date() / 1000)
   // 背景动画
   setTimeout(() => {
     bgcAnimation()
   }, 0)
-  bgcTimer.value = setInterval(() => {
+  bgcTimer.value = window.setInterval(() => {
     bgcAnimation()
   }, 5000)
+
+  window.addEventListener('beforeunload', () => {
+    end_time.value = Math.floor(+new Date() / 1000)
+    stay_time.value = end_time.value - start_time.value
+    // 上传访问量
+    const analyticsData = {
+      time: stay_time.value,
+      startTime: start_time.value
+    };
+    const blob = new Blob([JSON.stringify(analyticsData)], {
+      type: 'application/json; charset=UTF-8'
+    });
+    navigator.sendBeacon(`${baseURL}/visit/set`, blob);
+  })
 })
 onBeforeUnmount(() => {
   clearInterval(bgcTimer.value)
@@ -47,14 +91,14 @@ const bgcAnimation = () => {
 const isLove = async () => {
   Love.value = !Love.value
   if (Love.value) {
-    const res = await axios.post('/blog/like', { account: blog?.account, title: blog?.title, like: 1 })
+    const res = await axios.post('/blog/like', { account: blog.value?.account, title: blog.value?.title, like: 1, target_id: blog.value?.id })
     if (res.data.status === 1) {
       ElMessage.success(res.data.message)
     } else {
       ElMessage.error(res.data.message)
     }
   } else {
-    const res = await axios.post('/blog/like', { account: blog?.account, title: blog?.title, like: -1 })
+    const res = await axios.post('/blog/like', { account: blog.value?.account, title: blog.value?.title, like: -1, target_id: blog.value?.id })
     if (res.data.status === 1) {
       ElMessage.warning('取消点赞')
     } else {
@@ -69,7 +113,7 @@ const submit_comment = async () => {
     return
   }
   const res = await axios.post('/blog/comment', {
-    id: blog?.id,
+    id: blog.value?.id,
     content: comment.value,
     account: userStore.get_account()
   })
@@ -78,12 +122,15 @@ const submit_comment = async () => {
     comment.value = ''
     get_comments()
   } else {
-    ElMessage.error('评论失败')
+    ElMessage.error('请先登录')
+    setTimeout(() => {
+      window.location.href = '/login'
+    }, 1000)
   }
 }
 // 获取评论
 const get_comments = async () => {
-  const res = await axios.post('/blog/get_comment', { id: blog?.id, })
+  const res = await axios.post('/blog/get_comment', { id: blog.value?.id, })
   if (res.data.status === 1) {
     comment_list.value = res.data.message
     comment_detail(comment_list.value)
@@ -95,13 +142,17 @@ const comment_detail = (comment_list: Comment[]) => {
     const res = await axios.get('/user/info', { params: { account: item.account } })
     if (res.data.status === 1) {
       item.avatar = res.data.message.avatar ? res.data.message.avatar : res.data.message.gender === '男' ? avatar_boy : avatar_gril
-      item.name = res.data.message.name
+      item.name = res.data.message.nickname || res.data.message.name
     }
   })
   console.log(comment_list)
 }
 const back = () => {
-  window.history.back()
+  if (window.history.length > 1) {
+    window.history.back()
+  } else {
+    window.location.href = '/'
+  }
 }
 const handleScroll = () => {
   const scrollContainer = document.querySelector('.bgc')
@@ -131,6 +182,11 @@ const scroll_to_top = () => {
     })
   }
 }
+
+// 下载文件
+const download_file = () => {
+  window.open('http://101.201.170.43:8888/down/ux12kGEtkPWo.xlsx', '_blank')
+}
 </script>
 
 <template>
@@ -152,20 +208,34 @@ const scroll_to_top = () => {
         </div>
         <div class="article-info">
           <div class="article-info-avatar">
-            <img :src="blog?.avatar" style="width: 100%;height: 100%;object-fit: cover;border-radius: 50%;">
+            <img :src="blog?.avatar" style="width: 100%;height: 100%;object-fit: cover;border-radius: 50%;"
+              loading="lazy">
           </div>
           <div class="article-user-info">
             <div class="article-user-name">{{ blog?.name }}</div>
             <div class="article-user-icons">
-              <i class="iconfont icon-rili" style="margin-right: 0.5vw;"></i>2025-04-02
+              <i class="iconfont icon-rili" style="margin-right: 0.5vw;"></i>{{ blog?.time }}
               <i class="iconfont icon-wenjianjia" style="margin-right: 0.5vw;margin-left: 1.5vw;"></i>{{ blog?.cate }}
             </div>
           </div>
         </div>
         <div class="article-content" v-html="blog?.content">
         </div>
+        <!-- 文件展示 -->
+        <div class="article-file" v-if="need_file">
+          <div class="article-file-icon">
+            <i class="iconfont icon-format-xlsx"></i>
+            <div class="article-file-name">
+              新生答疑 <span style="font-size: 10px;">.xlsx</span>
+            </div>
+          </div>
+          <button class="article-file-download" @click="download_file">
+            <i class="iconfont icon-xiazai"></i>
+            点击下载
+          </button>
+        </div>
         <div class="article-bottom">
-          <div class="title"><span>标题：</span>{{ blog?.time }}</div>
+          <div class="title"><span>标题：</span>{{ blog?.title }}</div>
           <div class="author"><span>作者：</span>{{ blog?.name }}</div>
           <div class="publish"><span>创建于：</span>{{ blog?.time }}</div>
           <div class="declare"><span>版权声明：</span>{{ isMobile ? '版权所有©梦翔，禁止转载' : '版权所有©梦翔工作室，禁止转载' }}</div>
@@ -181,7 +251,8 @@ const scroll_to_top = () => {
             <div class="comment" v-for="(item, index) in comment_list" :key="index">
               <div class="comment-top">
                 <div class="comment-top-avatar">
-                  <img :src="item.avatar" style="width: 100%;height: 100%;object-fit: cover;border-radius: 50%;">
+                  <img :src="item.avatar" style="width: 100%;height: 100%;object-fit: cover;border-radius: 50%;"
+                    loading="lazy">
                 </div>
                 <div class="comment-top-name">{{ item.name }}</div>
                 <div class="comment-top-time">{{ item.time }}</div>
@@ -319,6 +390,80 @@ const scroll_to_top = () => {
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
+}
+
+.article-file {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  min-height: 100px;
+  height: 10vh;
+  max-height: 120px;
+  aspect-ratio: 2.5;
+  background: linear-gradient(90deg, #2b6bff, #7e9fec, #2b6bff);
+  background-size: 200%;
+  border-radius: 10px;
+  margin-top: 20px;
+  padding: 10px;
+  animation: back_move 4s linear infinite;
+}
+
+@keyframes back_move {
+  from {
+    background-position: 0px center;
+  }
+
+  to {
+    background-position: 1000px center;
+  }
+}
+
+.article-file-icon {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+  height: 100%;
+  aspect-ratio: 1.8;
+  background: #c1d3ff;
+  border-radius: 10px;
+}
+
+.article-file-icon i {
+  font-size: 35px;
+}
+
+.article-file-name {
+  font-size: 15px;
+  color: black;
+  font-weight: 700;
+}
+
+.article-file-download {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  margin-left: 10px;
+  background: #c1d3ff;
+  border-radius: 10px;
+  font-size: 14px;
+  gap: 8px;
+  transition: all .3s;
+  cursor: pointer;
+  border: none;
+}
+
+.article-file-download i {
+  font-size: 25px;
+}
+
+.article-file-download:hover {
+  background: rgba(255, 255, 255, 1);
+  color: #2b6bff;
 }
 
 .article-bottom {

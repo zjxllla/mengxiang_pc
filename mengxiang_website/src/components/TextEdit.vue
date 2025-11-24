@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import '@wangeditor/editor/dist/css/style.css' // 引入 css
 import { onBeforeUnmount, ref, shallowRef, watch, watchEffect } from 'vue'
-// @ts-expect-error 暂时忽略类型检查，因为 @wangeditor/editor-for-vue 的类型声明文件存在问题
+// eslint-disable-next-line
+// @ts-ignore
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import type { IDomEditor } from '@wangeditor/editor'
+import { baseURL } from '../axios'
+
 
 // 声明属性
 const prop = defineProps({
@@ -70,7 +73,7 @@ const editorConfig = {
   placeholder: '请输入内容...',
   MENU_CONF: {
     uploadImage: { // 上传图片的配置
-      server: 'http://localhost:8080/wang/image',  // 上传图片的网址
+      server: `${baseURL}/wang/image`,  // 上传图片的网址
       fieldName: 'file', // 上传文件的名称
       maxNumberOfFiles: prop.IsTreeHole ? 1 : 10, // 最多上传 10 张图片
     }

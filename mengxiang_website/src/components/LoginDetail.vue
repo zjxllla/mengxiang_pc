@@ -124,6 +124,10 @@ const radio = () => {
     font-size: 24px;
     padding-left: 25px;
   }
+
+  .el-select--large {
+    min-width: 100px;
+  }
 }
 
 .title::before,

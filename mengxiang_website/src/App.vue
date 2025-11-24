@@ -4,25 +4,32 @@ import { useRouter } from 'vue-router'
 import LoadingScreen from './components/LoadingScreen.vue'
 
 // 获取LoadingScreen组件实例
-const loadingScreen = ref<InstanceType<typeof LoadingScreen> | null>(null)
+const loadingScreen = ref<InstanceType<typeof LoadingScreen>>()
 const router = useRouter()
 
 // 设置路由切换时的加载动画
 onMounted(() => {
   // 全局前置守卫 - 路由开始切换时显示加载动画
   router.beforeEach((to, from, next) => {
+    if (from.path.toLowerCase().startsWith('/user') && to.path.toLowerCase().startsWith('/user')) {
+      next()
+      return
+    }
     // 如果是首次加载或路由确实发生了变化
     if (from.path !== to.path) {
       loadingScreen.value?.showLoading()
+      console.log('start:', +new Date() / 1000)
     }
     next()
   })
 
   // 全局后置钩子 - 路由切换完成后隐藏加载动画
   router.afterEach(() => {
+    console.log('end1:', +new Date() / 1000)
     // 延迟一段时间再隐藏加载动画，确保新页面已加载
     setTimeout(() => {
       loadingScreen.value?.hideLoading()
+      console.log('end2:', +new Date() / 1000)
     }, 500) // 可以根据需要调整延迟时间
   })
 })

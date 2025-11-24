@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "typeRoots": ["./src/Types", "./node_modules/@types"]
+    "typeRoots": ["./src/Types", "./node_modules/@types"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "files": [],
   "references": [

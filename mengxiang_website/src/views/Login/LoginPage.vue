@@ -7,7 +7,8 @@ import type { FormInstance } from 'element-plus'
 import { useUserStore } from "@/stores"
 import { useGlobalStore } from "@/stores"
 import LoginDetail from "@/components/LoginDetail.vue"
-import BackBtn from '@/components/BackBtn.vue';
+import BackBtn from '@/components/BackBtn.vue'
+import { baseURL } from '../../axios'
 
 const form = ref()
 const regist_success = ref(false)
@@ -21,6 +22,9 @@ const formModel = ref({
   Invitation: ''
 })
 const isMobile = ref(true)
+const start_time = ref(0)
+const end_time = ref(0)
+const stay_time = ref(0)
 isMobile.value = globalStore.isMobile
 // 注册规则
 const rules = {
@@ -44,9 +48,24 @@ const reset = () => {
   formModel.value.username = ''
   formModel.value.password = ''
 }
-onMounted(() => {
+onMounted(async () => {
   // 初始化shape元素动画
   showShapes()
+  await axios.get('/ip/get')
+  start_time.value = Math.floor(+new Date() / 1000)
+  window.addEventListener('beforeunload', () => {
+    end_time.value = Math.floor(+new Date() / 1000)
+    stay_time.value = end_time.value - start_time.value
+    // 上传访问量
+    const analyticsData = {
+      time: stay_time.value,
+      startTime: start_time.value
+    };
+    const blob = new Blob([JSON.stringify(analyticsData)], {
+      type: 'application/json; charset=UTF-8'
+    });
+    navigator.sendBeacon(`${baseURL}/visit/set`, blob);
+  })
 })
 
 // 显示shape元素的函数
@@ -130,8 +149,10 @@ const login = async () => {
     } else {
       userstore.set_account(formModel.value.username)
       globalStore.token = res.data.token
-      ElMessage.success(res.data.message)
-      window.history.back()
+      ElMessage.success('登录成功,即将返回上一页')
+      setTimeout(() => {
+        window.history.back()
+      }, 1000)
     }
     reset()
   } catch (error) {
@@ -196,7 +217,7 @@ const DetailSuccess = () => {
         </el-form-item>
       </el-form>
       <!-- 登录 -->
-      <el-form ref="form" :model="formModel" :rules="rules" :size="isMobile ? 'default' : 'large'" autocomplete="off"
+      <el-form ref="form" :model="formModel" :rules="rules" :size="isMobile ? 'default' : 'large'" autocomplete="on"
         v-else class="form" key="login">
         <el-form-item>
           <div class='title'>
@@ -204,11 +225,11 @@ const DetailSuccess = () => {
           </div>
         </el-form-item>
         <el-form-item prop="username">
-          <el-input :prefix-icon="User" placeholder="请输入账号" v-model="formModel!.username"></el-input>
+          <el-input :prefix-icon="User" placeholder="请输入账号" v-model="formModel!.username" name="account"></el-input>
         </el-form-item>
         <el-form-item prop="password">
           <el-input name="password" :prefix-icon="Lock" type="password" placeholder="请输入密码"
-            v-model="formModel!.password"></el-input>
+            v-model="formModel!.password" autocomplete="current-password"></el-input>
         </el-form-item>
         <el-form-item>
           <el-button class="register_button" type="primary" auto-insert-space @click="login">登录</el-button>

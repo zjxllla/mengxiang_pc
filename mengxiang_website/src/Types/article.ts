@@ -1,5 +1,5 @@
 export interface article {
-  id: 1
+  id: number
   account: ''
   avatar: ''
   title: ''
@@ -10,7 +10,7 @@ export interface article {
   name: ''
 }
 export interface blog {
-  id: 1
+  id: number
   account: ''
   avatar: ''
   name: ''
@@ -18,14 +18,23 @@ export interface blog {
   content: ''
   like_num: 0
   time: ''
-  introduction:''
-  cate:''
+  introduction: ''
+  cate: ''
 }
 export interface Comment {
-  id: 1
+  id: number
   account: ''
   avatar: ''
   name: ''
   content: ''
   time: ''
+}
+
+export type like = {
+  id: number
+  user_id: string
+  target_type: number
+  target_id: number
+  created_at: string
+  is_canceled: number
 }

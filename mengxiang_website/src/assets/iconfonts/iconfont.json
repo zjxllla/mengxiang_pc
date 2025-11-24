@@ -6,6 +6,118 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "1305463",
+      "name": "查看",
+      "font_class": "chakan",
+      "unicode": "e63e",
+      "unicode_decimal": 58942
+    },
+    {
+      "icon_id": "2815705",
+      "name": "查看",
+      "font_class": "chakan1",
+      "unicode": "e606",
+      "unicode_decimal": 58886
+    },
+    {
+      "icon_id": "4818415",
+      "name": "H5动画-左右翻转",
+      "font_class": "Hdonghua-zuoyoufanzhuan",
+      "unicode": "e696",
+      "unicode_decimal": 59030
+    },
+    {
+      "icon_id": "12851072",
+      "name": "垂直翻转-翻转进入",
+      "font_class": "chuizhifanzhuan-fanzhuanjinru",
+      "unicode": "e640",
+      "unicode_decimal": 58944
+    },
+    {
+      "icon_id": "2155012",
+      "name": "删除",
+      "font_class": "shanchu",
+      "unicode": "e62a",
+      "unicode_decimal": 58922
+    },
+    {
+      "icon_id": "7761519",
+      "name": "删 除 ",
+      "font_class": "shanchu1",
+      "unicode": "e613",
+      "unicode_decimal": 58899
+    },
+    {
+      "icon_id": "21703365",
+      "name": "删除3",
+      "font_class": "shanchu2",
+      "unicode": "e605",
+      "unicode_decimal": 58885
+    },
+    {
+      "icon_id": "6283453",
+      "name": "下载",
+      "font_class": "xiazai",
+      "unicode": "e66d",
+      "unicode_decimal": 58989
+    },
+    {
+      "icon_id": "34452856",
+      "name": "format-xlsx",
+      "font_class": "format-xlsx",
+      "unicode": "e82b",
+      "unicode_decimal": 59435
+    },
+    {
+      "icon_id": "1817723",
+      "name": "退出",
+      "font_class": "tuichu",
+      "unicode": "e618",
+      "unicode_decimal": 58904
+    },
+    {
+      "icon_id": "11467856",
+      "name": "退出",
+      "font_class": "tuichu1",
+      "unicode": "e611",
+      "unicode_decimal": 58897
+    },
+    {
+      "icon_id": "12717491",
+      "name": "退出",
+      "font_class": "tuichu2",
+      "unicode": "e612",
+      "unicode_decimal": 58898
+    },
+    {
+      "icon_id": "13769347",
+      "name": "性别-男",
+      "font_class": "xingbie-nan",
+      "unicode": "e628",
+      "unicode_decimal": 58920
+    },
+    {
+      "icon_id": "13769358",
+      "name": "性别-女",
+      "font_class": "xingbie-nv",
+      "unicode": "e629",
+      "unicode_decimal": 58921
+    },
+    {
+      "icon_id": "3315084",
+      "name": "博客园",
+      "font_class": "bokeyuan",
+      "unicode": "e604",
+      "unicode_decimal": 58884
+    },
+    {
+      "icon_id": "24469762",
+      "name": "树洞",
+      "font_class": "shudong",
+      "unicode": "e61c",
+      "unicode_decimal": 58908
+    },
+    {
       "icon_id": "6573280",
       "name": "返回",
       "font_class": "fanhui1",

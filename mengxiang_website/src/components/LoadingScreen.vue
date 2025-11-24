@@ -16,7 +16,7 @@ const hideLoading = () => {
 // 暴露方法给父组件使用
 defineExpose({
   showLoading,
-  hideLoading
+  hideLoading,
 })
 </script>
 

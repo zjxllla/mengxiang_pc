@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref,onBeforeUnmount } from 'vue'
+import { onMounted, ref, onBeforeUnmount } from 'vue'
 import NewTeamButton from '../../components/NewTeamButton.vue'
 import { useGlobalStore } from '../../stores'
 import BackBtn from '@/components/BackBtn.vue';
+import { baseURL } from '../../axios'
+import axios from '@/axios'
 
 // 检测是否在微信浏览器中
 const isWeixinBrowser = () => {
@@ -13,13 +15,33 @@ const isWeixinBrowser = () => {
 const observe = ref<IntersectionObserver | null>(null)
 const video_ref = ref<HTMLVideoElement | null>(null)
 const video_ref2 = ref<HTMLVideoElement | null>(null)
-const life_item3_timer = ref(0)
+const life_item3_timer = ref<number | undefined>(0)
 const count = ref(0)
 const globalStore = useGlobalStore()
 const isMobile = ref(globalStore.isMobile)
 const listen_count = ref(0)
+const start_time = ref(0)
+const end_time = ref(0)
+const stay_time = ref(0)
 
-onMounted(() => {
+onMounted(async () => {
+  // 网站访问量
+  await axios.get('/ip/get')
+  start_time.value = Math.floor(+new Date() / 1000)
+  window.addEventListener('beforeunload', () => {
+    end_time.value = Math.floor(+new Date() / 1000)
+    stay_time.value = end_time.value - start_time.value
+    // 上传访问量
+    const analyticsData = {
+      time: stay_time.value,
+      startTime: start_time.value
+    };
+    const blob = new Blob([JSON.stringify(analyticsData)], {
+      type: 'application/json; charset=UTF-8'
+    });
+    navigator.sendBeacon(`${baseURL}/visit/set`, blob);
+  })
+
   // 设置视频倍速
   if (video_ref.value || video_ref2.value) {
     (video_ref.value as HTMLVideoElement).playbackRate = 0.75
@@ -192,7 +214,8 @@ const life_item_bgc_change = () => {
   const life_item3_bgc1 = document.querySelector('.life-item3-bgc-1') as HTMLElement
   const life_item3_bgc2 = document.querySelector('.life-item3-bgc-2') as HTMLElement
   const life_item3_bgc3 = document.querySelector('.life-item3-bgc-3') as HTMLElement
-  life_item3_timer.value = setInterval(() => {
+  // 解决 setInterval 返回类型兼容性问题
+  life_item3_timer.value = window.setInterval(() => {
     if (count.value % 4 == 0) {
       life_item3_bgc1.style.top = '-100%'
       life_item3_bgc2.style.top = '0'
@@ -218,7 +241,12 @@ const life_item_bgc_change = () => {
 }
 // 切换到登录页面
 const ToLogin = () => {
-  window.location.href = 'https://qm.qq.com/cgi-bin/qm/qr?k=n2pzfGMmpUaj5RbTTa7_ti2k96uqgoFn&jump_from=webapi&authKey=0IBvXsTSc88nf5sBmyySkbjnAgduDPXfzMn0A1e66pviDD45vetA+1LBH0d40DAA'
+  window.location.href = 'http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=V0P7Mxz6Xsn0OsDU8icE3bkW7haPqF9b&authKey=93fETJ4VThAkBi068QdMnJ1YMhQ0tY2WhMZOXuBMTPwZy9k%2F90%2FZJtsqyWxPn8cf&noverify=0&group_code=1055107073'
+}
+
+const playVideo = (event: Event) => {
+  const target = event.target as HTMLVideoElement
+  target.play()
 }
 
 </script>
@@ -229,11 +257,11 @@ const ToLogin = () => {
   <div class="new_team">
     <el-row>
       <el-col :span="24" class="video_container" :class="{ 'mobile-video-container': isMobile }">
-        <video src="../../assets/mengxiang.mp4" width="100%" height="100%" muted loop autoplay playsinline
-          webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true" class="video"
-          ref="video_ref"
+        <video src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/mengxiang.mp4" width="100%"
+          height="100%" muted loop autoplay playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5"
+          x5-video-player-fullscreen="true" class="video" ref="video_ref"
           poster="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/mengxiang_poster.jpg"
-          @click="(event) => (event.target as HTMLVideoElement).play()"></video>
+          @click="playVideo"></video>
       </el-col>
     </el-row>
     <el-row class="title">
@@ -324,7 +352,7 @@ const ToLogin = () => {
         <div class="life-item3-bgc-3"></div>
         <div class="life-title">MengXiang Talk</div>
         <div class="life-text" style="background: linear-gradient(to top,#03576a,#02fae9);padding-top: 20%;">
-          在当今信息爆炸的时代，知识的传播与思想的交流愈发重要。而在这片广阔的交流天地中，梦翔工作室犹如一颗璀璨的星辰，以其独特的 Mengxiang Talk 系列活动，闪耀着独特的光芒，为广大受众带来了全新的思想盛宴。
+          在当今信息爆炸的时代，知识的传播与思想的交流愈发重要。而在这片广阔的交流天地中，梦翔工作室犹如一颗璀璨的星辰，以其独特的 Mengxiang Talk 系列活动，闪耀着独特的光芒，为同学们带来了全新的思想盛宴。
         </div>
       </el-col>
       <el-col :span="12" class="life-item4" @mouseenter="life_item1_in(3)" @mouseleave="life_item1_out(3)">
@@ -340,16 +368,16 @@ const ToLogin = () => {
       <el-col :span="10" class="life-item5" @mouseenter="life_item1_in(4)" @mouseleave="life_item1_out(4)">
         <div class="life-title">假期生活</div>
         <div class="life-text" style="background: linear-gradient(to top,red,pink);padding-top: 15%;">
-          听陈晓卿、许知远等影响力大咖谈天说地，听内部同事分享的工作生活的体验和感悟，在这个分享和交流的平台里，改变人生轨迹的灵光也许就此闪现。
+          梦翔工作室的假期生活，是把键盘带到海边：上午用Python追浪，下午让树莓派晒盐，夜里在篝火旁commit星空。代码随潮汐迭代，灵感伴萤火开源；我们带着满格电量与海风编译的创意归来，为新学期注入更鲜活的0与1。
         </div>
       </el-col>
       <el-col :span="10" class="life-item6" @mouseenter="life_item1_in(5)" @mouseleave="life_item1_out(5)">
         <div class="life-item6-video">
-          <video preload="auto" src="../../assets/add_us.mp4" width="100%" height="100%" muted loop autoplay playsinline
-            webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true" class="video"
-            ref="video_ref2"
+          <video preload="auto" src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/add_us.mp4"
+            width="100%" height="100%" muted loop autoplay playsinline webkit-playsinline x5-playsinline
+            x5-video-player-type="h5" x5-video-player-fullscreen="true" class="video" ref="video_ref2"
             poster="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/add_us_poster.jpg"
-            @click="(event) => (event.target as HTMLVideoElement).play()"></video>
+            @click="playVideo"></video>
         </div>
         <div class="life-title">加入我们</div>
         <div class="life-text" style="background: linear-gradient(to top,#c201f8,#eeb3ff);">
@@ -364,9 +392,8 @@ const ToLogin = () => {
       <el-col :span="24" class="life-item1" @mouseenter="life_item1_in(0)" @mouseleave="life_item1_out(0)">
         <div class="life-title">人才有活水,组织有活力</div>
         <div class="life-text" style="padding-top: 13vh ;">
-          腾讯的活水文化，可以让你在多个舞台挥洒激情、获得持续成长。腾讯多元的业务布局会给你提供丰富的发展机会，
-          所有工作机会都会对内部员工开放，只要工作满一年就可以自由申请内部转岗，
-          每年都有1000+的腾讯员工通过活水机制找到更适合自己的工作岗位。
+          梦翔工作室以“人才有活水，组织有活力”为理念，通过举办多样化的活动，如创意比赛、技能培训等，激发成员潜能，培养创新思维。
+          同时，工作室注重团队协作，鼓励成员积极参与项目实践，让人才在实践中成长，为组织注入源源不断的活力，推动社团持续发展。
         </div>
       </el-col>
     </el-row>
@@ -374,9 +401,8 @@ const ToLogin = () => {
       <el-col :span="24" class="life-item2" @mouseenter="life_item1_in(1)" @mouseleave="life_item1_out(1)">
         <div class="life-title">梦翔公社</div>
         <div class="life-text" style="background: linear-gradient(to top,#0052d9,#02fae9); padding-top: 13vh">
-          鹅民公社是腾讯弹性福利平台，你可以在公社自选健康、学习成长和鹅厂特色类福利，
-          还可以向鹅民公社推荐你想要的福利，公社满足员工不同的个性化福利需求，
-          从此和千人一面的“福利”说拜拜。
+          梦翔社团是由大学生们自发组织的充满活力与创造力的社团。在这里，同学们汇聚一堂，共同追求梦想，探索未知。
+          社团以“梦翔公社”为平台，举办各类活动，如创意分享会、学术讲座、团队拓展等，旨在激发成员的创造力，培养团队合作精神，提升综合素质。
         </div>
       </el-col>
     </el-row>
@@ -387,7 +413,7 @@ const ToLogin = () => {
         <div class="life-item3-bgc-3"></div>
         <div class="life-title">MengXiang Talk</div>
         <div class="life-text" style="background: linear-gradient(to top,#03576a,#02fae9);padding-top: 20%;">
-          听陈晓卿、许知远等影响力大咖谈天说地，听内部同事分享的工作生活的体验和感悟，在这个分享和交流的平台里，改变人生轨迹的灵光也许就此闪现。
+          在当今信息爆炸的时代，知识的传播与思想的交流愈发重要。而在这片广阔的交流天地中，梦翔工作室犹如一颗璀璨的星辰，以其独特的 Mengxiang Talk 系列活动，闪耀着独特的光芒，为同学们带来了全新的思想盛宴。
         </div>
       </el-col>
     </el-row>
@@ -395,7 +421,7 @@ const ToLogin = () => {
       <el-col :span="24" class="life-item4" @mouseenter="life_item1_in(3)" @mouseleave="life_item1_out(3)">
         <div class="life-title">梦翔 Party</div>
         <div class="life-text" style="background: linear-gradient(to top,#598d00,#a6ff0e);padding-top: 13vh;">
-          听陈晓卿、许知远等影响力大咖谈天说地，听内部同事分享的工作生活的体验和感悟，在这个分享和交流的平台里，改变人生轨迹的灵光也许就此闪现。
+          梦翔Party是一场充满活力与创意的社交盛会。在这里，参与者们不仅能享受精彩的音乐和美食，还能与志同道合的朋友交流互动。工作室精心设计了各种趣味游戏和互动环节，让现场气氛热烈而温馨。
         </div>
       </el-col>
     </el-row>
@@ -403,17 +429,18 @@ const ToLogin = () => {
       <el-col :span="24" class="life-item5" @mouseenter="life_item1_in(4)" @mouseleave="life_item1_out(4)">
         <div class="life-title">假期生活</div>
         <div class="life-text" style="background: linear-gradient(to top,red,pink);padding-top: 13vh;">
-          听陈晓卿、许知远等影响力大咖谈天说地，听内部同事分享的工作生活的体验和感悟，在这个分享和交流的平台里，改变人生轨迹的灵光也许就此闪现。
+          梦翔工作室的假期生活，是把键盘带到海边：上午用Python追浪，下午让树莓派晒盐，夜里在篝火旁commit星空。代码随潮汐迭代，灵感伴萤火开源；我们带着满格电量与海风编译的创意归来，为新学期注入更鲜活的0与1。
         </div>
       </el-col>
     </el-row>
     <el-row class="life" v-if="isMobile">
       <el-col :span="24" class="life-item6" @mouseenter="life_item1_in(5)" @mouseleave="life_item1_out(5)">
         <div class="life-item6-video">
-          <video src="../../assets/add_us.mp4" width="100%" height="100%" muted loop autoplay playsinline
-            webkit-playsinline x5-playsinline x5-video-player-type="h5" x5-video-player-fullscreen="true" class="video"
+          <video src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/add_us.mp4" width="100%"
+            height="100%" muted loop autoplay playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5"
+            x5-video-player-fullscreen="true" class="video"
             poster="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/add_us_poster.jpg"
-            @click="(event) => (event.target as HTMLVideoElement).play()"></video>
+            @click="playVideo"></video>
         </div>
         <div class="life-title">加入我们</div>
         <div class="life-text" style="background: linear-gradient(to top,#c201f8,#eeb3ff);">
@@ -428,12 +455,12 @@ const ToLogin = () => {
 <style scoped>
 @font-face {
   font-family: 'tencentFontW3';
-  src: url(../../assets/font/南构无恙行书.ttf);
+  src: url(https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/font/%E5%8D%97%E6%9E%84%E6%97%A0%E6%81%99%E8%A1%8C%E4%B9%A6.ttf);
 }
 
 @font-face {
   font-family: 'ancientFont';
-  src: url(../../assets/font/墨趣古风体.ttf);
+  src: url(https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/font/%E5%A2%A8%E8%B6%A3%E5%8F%A4%E9%A3%8E%E4%BD%93.ttf);
 }
 
 .back {
