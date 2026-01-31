@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, onBeforeMount, watch, nextTick, onUnmounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount, onBeforeMount, nextTick, onUnmounted } from 'vue'
 import { ArrowRightBold } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox, imageEmits } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import TextEdit from '@/components/TextEdit.vue'
 import { useGlobalStore, useBlogStore, useUserStore } from '../../stores'
 import { baseURL } from '../../axios'
@@ -19,7 +19,6 @@ const deg2 = ref(180)
 const deg3 = ref(270)
 const deg4 = ref(45)
 const colors = ref(['#8282eb', '#8df5a8', '#f598a8'])
-const Love = ref<boolean[]>([])
 const isLogin = ref(false)
 const scroll_top = ref(false)
 const drawer_new = ref(false)
@@ -81,9 +80,9 @@ onBeforeMount(() => {
   beforeFn()
 })
 
-onMounted(async () => {
+onMounted(() => {
   // 更新网站访问量
-  await axios.get('/ip/get')
+  axios.get('/ip/get')
   start_time.value = Math.floor(+new Date() / 1000)
   // 背景动画
   setTimeout(() => {
@@ -143,12 +142,6 @@ onMounted(async () => {
   });
 })
 
-watch(blog_list, (newValue) => {
-  Love.value = []
-  newValue.forEach(() => {
-    Love.value.push(false)
-  })
-})
 onBeforeUnmount(() => {
   clearInterval(bgcTimer.value)
 })
@@ -179,9 +172,13 @@ const getLoveList = async () => {
   }
 }
 const isLove = async (index: number) => {
+  if (!user.value) {
+    ElMessage.warning('请先登录')
+    return
+  }
   const love = !loved_list.value.some(item => item.target_id === blog_list.value[index].id)
   if (love) {
-    const res = await axios.post('/blog/like', { account: blog_list.value[index].account, title: blog_list.value[index].title, like: 1, target_id: blog_list.value[index].id })
+    const res = await axios.post('/blog/like', { account: blog_list.value[index].account, title: blog_list.value[index].title, like: 1, target_id: blog_list.value[index].id, user_id: user.value })
     if (res.data.status === 1) {
       ElMessage.success(res.data.message)
       loved_list.value.push({

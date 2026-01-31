@@ -91,6 +91,14 @@ const handleCreated = (editor: IDomEditor) => {
   editorRef.value = editor // 记录 editor 实例，重要！
 }
 </script>
+
+<script lang="ts">
+// 让ts识别组件 不加会报红但是程序仍可用
+export default {
+  name: 'TextEdit',
+}
+</script>
+
 <template>
   <div id="editor-container" style="border: 1px solid #ccc; display: flex; flex-direction: column;"
     :style="{ height: prop.height }">

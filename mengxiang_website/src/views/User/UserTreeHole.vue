@@ -26,6 +26,7 @@ const onScroll = () => {
   if (timer) {
     clearTimeout(timer)
   }
+  if (!lists_ref.value) return
   const precent = ((lists_ref.value!.scrollTop + lists_ref.value!.clientHeight) / lists_ref.value!.scrollHeight * 100).toFixed(2) + '%'
   console.log(precent)
   timer = window.setTimeout(() => {

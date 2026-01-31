@@ -46,6 +46,7 @@ onMounted(() => {
         <component :is="Component" />
       </transition>
     </router-view>
+    <!-- <router-view></router-view> -->
   </div>
 </template>
 

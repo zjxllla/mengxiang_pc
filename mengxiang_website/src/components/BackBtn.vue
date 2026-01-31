@@ -8,6 +8,13 @@ defineProps({
 })
 </script>
 
+<script lang="ts">
+// 显式添加默认导出
+export default {
+  name: 'BackBtn'
+}
+</script>
+
 <template>
   <button class="button">
     <div class="button-box">
@@ -18,7 +25,7 @@ defineProps({
           </path>
         </svg>
       </span>
-      <span class="button-elem" :style="{fill:color}">
+      <span class="button-elem" :style="{ fill: color }">
         <svg viewBox="0 0 46 40">
           <path
             d="M46 20.038c0-.7-.3-1.5-.8-2.1l-16-17c-1.1-1-3.2-1.4-4.4-.3-1.2 1.1-1.2 3.3 0 4.4l11.3 11.9H3c-1.7 0-3 1.3-3 3s1.3 3 3 3h33.1l-11.3 11.9c-1 1-1.2 3.3 0 4.4 1.2 1.1 3.3.8 4.4-.3l16-17c.5-.5.8-1.1.8-1.9z">

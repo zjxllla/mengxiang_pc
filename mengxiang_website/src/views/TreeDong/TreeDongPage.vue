@@ -109,9 +109,7 @@ const beforeMount_fn = async () => {
     getLikesList()
   }
   // 获取文章列表
-  await getArticleList()
-  article_list.value.reverse()
-  dealTime(article_list.value as unknown as article[])
+  getArticleList()
 }
 
 onBeforeMount(() => {
@@ -174,6 +172,7 @@ const onPraise = async (praise: boolean, index: number) => {
       account: article_list.value[index].account,
       title: article_list.value[index].title,
       target_id: article_list.value[index].id,
+      user_id: user.value,
       like: 1
     })
     if (res1.data.status === 1) {
@@ -206,6 +205,7 @@ const onPraise = async (praise: boolean, index: number) => {
     }
   }
 }
+
 const onOrginal = (index: number, id: number) => {
   drawer.value = true
   original_article.value = article_list.value[index]
@@ -285,14 +285,17 @@ const getArticleList = async () => {
     // 等待 DOM 更新
     await nextTick()
     initObserver()
-    article_list.value.forEach(async (item) => {
+    article_list.value.forEach(item => {
       const account = item.account
-      const res = await Myaxios.get('/user/info', { params: { account: account } })
-      if (res.data.status === 1) {
-        item.avatar = res.data.message.avatar ? res.data.message.avatar : res.data.message.gender === '男' ? avatar_boy : avatar_gril
-        item.name = res.data.message.nickname || res.data.message.name
-      }
+      Myaxios.get('/user/info', { params: { account: account } }).then(res => {
+        if (res.data.status === 1) {
+          item.avatar = res.data.message.avatar ? res.data.message.avatar : res.data.message.gender === '男' ? avatar_boy : avatar_gril
+          item.name = res.data.message.nickname || res.data.message.name
+        }
+      })
     })
+    article_list.value.reverse()
+    dealTime(article_list.value as article[])
   }
 }
 // 处理时间
@@ -615,7 +618,7 @@ const to_home = () => {
           <div class="aside-card1-bottom" v-if="isLogin">
             <div class="card1-bottom-name" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }">{{
               user_info.nickname || user_info.name
-              }}</div>
+            }}</div>
             <div class="card1-bottom-text" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }">
               {{ user_info.motto }}</div>
           </div>

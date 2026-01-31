@@ -4,14 +4,10 @@ import NewTeamButton from '../../components/NewTeamButton.vue'
 import { useGlobalStore } from '../../stores'
 import BackBtn from '@/components/BackBtn.vue';
 import { baseURL } from '../../axios'
+import { useRouter } from 'vue-router'
 import axios from '@/axios'
 
-// 检测是否在微信浏览器中
-const isWeixinBrowser = () => {
-  const ua = navigator.userAgent.toLowerCase()
-  return /micromessenger/.test(ua)
-}
-
+const router = useRouter()
 const observe = ref<IntersectionObserver | null>(null)
 const video_ref = ref<HTMLVideoElement | null>(null)
 const video_ref2 = ref<HTMLVideoElement | null>(null)
@@ -23,6 +19,7 @@ const listen_count = ref(0)
 const start_time = ref(0)
 const end_time = ref(0)
 const stay_time = ref(0)
+const dark_container_ref = ref<HTMLDivElement | null>(null)
 
 onMounted(async () => {
   // 网站访问量
@@ -42,43 +39,6 @@ onMounted(async () => {
     navigator.sendBeacon(`${baseURL}/visit/set`, blob);
   })
 
-  // 设置视频倍速
-  if (video_ref.value || video_ref2.value) {
-    (video_ref.value as HTMLVideoElement).playbackRate = 0.75
-
-    // 针对微信浏览器的特殊处理
-    if (isWeixinBrowser()) {
-      // 安全地检查WeixinJSBridge是否存在
-      if (!((window as Window & typeof globalThis & { WeixinJSBridge?: unknown }).WeixinJSBridge)) {
-        try {
-          document.addEventListener('WeixinJSBridgeReady', () => {
-            video_ref.value?.play()
-            video_ref2.value?.play()
-            // 获取所有视频元素并尝试播放
-            document.querySelectorAll('video').forEach(video => {
-              video.play().catch(err => console.warn('视频播放失败:', err))
-            })
-          }, false)
-        } catch (error) {
-          console.warn('微信JSBridge事件监听失败:', error)
-          // 尝试直接播放视频
-          video_ref.value?.play().catch(err => console.warn('视频播放失败:', err))
-          video_ref2.value?.play().catch(err => console.warn('视频播放失败:', err))
-        }
-      } else {
-        video_ref.value?.play().catch(err => console.warn('视频播放失败:', err))
-        video_ref2.value?.play().catch(err => console.warn('视频播放失败:', err))
-        // 获取所有视频元素并尝试播放
-        document.querySelectorAll('video').forEach(video => {
-          video.play().catch(err => console.warn('视频播放失败:', err))
-        })
-      }
-    } else {
-      // 非微信浏览器环境，正常播放
-      video_ref.value?.play().catch(err => console.warn('视频播放失败:', err))
-      video_ref2.value?.play().catch(err => console.warn('视频播放失败:', err))
-    }
-  }
   // 开启轮播背景
   life_item_bgc_change()
   // 监听图标进入视口自动播放动画
@@ -121,7 +81,7 @@ onBeforeUnmount(() => {
 // 返回上一页
 const back = () => {
   globalStore.setBackto_enum(true)
-  window.history.back()
+  router.go(-1)
 }
 // 第一个图标动画
 const icon_item_rotate = () => {
@@ -249,19 +209,43 @@ const playVideo = (event: Event) => {
   target.play()
 }
 
+// dark显示
+const mousemove = (e: MouseEvent) => {
+  const { pageX, pageY } = e
+  dark_container_ref.value?.style.setProperty('--left', pageX + 'px')
+  dark_container_ref.value?.style.setProperty('--top', pageY + 'px')
+}
+
+const mouseleave = () => {
+  dark_container_ref.value?.style.setProperty('--left', 10000 + 'px')
+  dark_container_ref.value?.style.setProperty('--top', 10000 + 'px')
+}
+
 </script>
+
 <template>
   <div class="back" :class="{ 'Mobile_back': isMobile }">
-    <BackBtn @click="back"></BackBtn>
+    <BackBtn @click="back" color="black"></BackBtn>
   </div>
   <div class="new_team">
     <el-row>
-      <el-col :span="24" class="video_container" :class="{ 'mobile-video-container': isMobile }">
-        <video src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/mengxiang.mp4" width="100%"
-          height="100%" muted loop autoplay playsinline webkit-playsinline x5-playsinline x5-video-player-type="h5"
-          x5-video-player-fullscreen="true" class="video" ref="video_ref"
-          poster="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/vedio/mengxiang_poster.jpg"
-          @click="playVideo"></video>
+      <el-col :span="24" class="video_container" :class="{ 'mobile-video-container': isMobile }" @mousemove="mousemove"
+        @mouseleave="mouseleave">
+        <section class="light-container">
+          <div class="light-title" :style="{ 'font-size': isMobile ? '35px' : '90px' }">梦翔，欢迎你！</div>
+          <div class="light-text-bgc" v-for="i in 6" :key="i">
+            <div class="light-text" v-for="i in 7" :key="i" :style="{ 'font-size': isMobile ? '20px' : '50px' }">M E N G
+              X I A
+              N G</div>
+          </div>
+        </section>
+        <section class="dark-container" ref="dark_container_ref">
+          <div class="dark-title" :style="{ 'font-size': isMobile ? '20px' : '60px' }">Welcome to MengXiang！</div>
+          <div class="dark-text-bgc" v-for="i in 10" :key="i">
+            <div class="dark-text" v-for="i in 7" :key="i" :style="{ 'font-size': isMobile ? '20px' : '50px' }">M E N G
+              X I A N G</div>
+          </div>
+        </section>
       </el-col>
     </el-row>
     <el-row class="title">
@@ -481,12 +465,111 @@ const playVideo = (event: Event) => {
 }
 
 .video_container {
+  position: relative;
   height: 85vh;
   width: 100vw;
+  cursor: crosshair;
+  z-index: 1;
 }
 
-.video {
-  object-fit: fill;
+.light-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  width: 100%;
+  height: 100%;
+  background: #faf7f5;
+  border-bottom: 3px solid rgba(0, 0, 0, .3);
+  overflow: hidden;
+}
+
+.light-title {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 90px;
+  font-weight: 700;
+  letter-spacing: .35rem;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+.light-text-bgc {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: .7rem;
+  width: 100%;
+  height: 15%;
+}
+
+.light-text-bgc:nth-child(2n) {
+  transform: translateX(-200px);
+}
+
+.light-text {
+  flex-shrink: 0;
+  color: #edeae9;
+  font-size: 50px;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: .5rem;
+}
+
+.dark-container {
+  --top: -1000%;
+  --left: -1000%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  width: 100%;
+  height: 100%;
+  background: black;
+  z-index: 1;
+  clip-path: circle(15vw at var(--left) var(--top));
+  overflow: hidden;
+}
+
+.dark-title {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 60px;
+  font-weight: 700;
+  letter-spacing: .2rem;
+  z-index: 1;
+  color: white;
+  white-space: nowrap;
+}
+
+.dark-text-bgc {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: .5rem;
+  width: 100%;
+  height: 10%;
+}
+
+.dark-text-bgc:nth-child(2n) {
+  transform: translateX(-200px);
+}
+
+.dark-text {
+  flex-shrink: 0;
+  color: #1f1f1f;
+  font-size: 30px;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: .4rem;
 }
 
 .title {

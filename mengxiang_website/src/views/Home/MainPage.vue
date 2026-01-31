@@ -36,9 +36,49 @@ const music_src = ref('')
 const music_pic = ref('')
 const music_play = ref(false)
 const show_control = ref(true)
+// 存储 static-ball 的随机样式，避免重新渲染时位置改变
+const part2BallStyles = ref<Array<{
+  top: string
+  left: string
+  width: string
+  r: string
+  g: string
+  b: string
+}>>([])
+const part3BallStyles = ref<Array<{
+  top: string
+  left: string
+  width: string
+  r: string
+  g: string
+  b: string
+}>>([])
+
+// 初始化 static-ball 的随机样式
+const initBallStyles = () => {
+  // 初始化 part2 的 8 个球
+  part2BallStyles.value = Array.from({ length: 6 }, () => ({
+    top: `${Math.random() * 70 + 5}%`,
+    left: `${Math.random() * 70 + 5}%`,
+    width: `${Math.random() * 20 + 5}vmax`,
+    r: `${Math.floor(Math.random() * 128) + 128}`,
+    g: `${Math.floor(Math.random() * 128) + 128}`,
+    b: `${Math.floor(Math.random() * 128) + 128}`
+  }))
+  // 初始化 part3 的 8 个球
+  part3BallStyles.value = Array.from({ length: 6 }, () => ({
+    top: `${Math.random() * 70 + 5}%`,
+    left: `${Math.random() * 70 + 5}%`,
+    width: `${Math.random() * 20 + 5}vmax`,
+    r: `${Math.floor(Math.random() * 128) + 128}`,
+    g: `${Math.floor(Math.random() * 128) + 128}`,
+    b: `${Math.floor(Math.random() * 128) + 128}`
+  }))
+}
+
 // 预加载轮播图片，提高用户体验
 const preloadImages = () => {
-  awards_pics.value.forEach((src, index) => {
+  awards_pics.value.forEach((src) => {
     const img = new Image()
     img.src = src
   })
@@ -46,10 +86,15 @@ const preloadImages = () => {
 const showDialog = ref(false)
 const dialogImageUrl = ref('')
 const isLong = ref(false)
+let Interval: number | null = null
+let Interval2: number | null = null
 
 // 控制加载屏幕的显示
 const showLoading = ref(true)
 onMounted(() => {
+  // 初始化 static-ball 的随机样式
+  initBallStyles()
+
   // 异步更新网站访问量，不阻塞页面渲染
   Myaxios.get('/ip/get').catch(err => console.error('Failed to get IP:', err))
 
@@ -58,13 +103,14 @@ onMounted(() => {
 
   start_time.value = Math.floor(+new Date() / 1000)
 
+  handle_ball_annimate()
   // 切换到菜单
   if (back_enum) {
     globalStore.setBackto_enum(false)
     to_enum()
   }
   // 获取随机音乐
-  get_music()
+  // get_music()
 
   // 检测设备类型
   checkMobile()
@@ -129,11 +175,11 @@ onMounted(() => {
   })
 
 
-  const audio = document.querySelector('.audio') as HTMLAudioElement;
+  // const audio = document.querySelector('.audio') as HTMLAudioElement;
 
-  audio!.addEventListener('canplaythrough', function () {
-    console.log('音频已加载完毕，可以完整播放');
-  });
+  // audio!.addEventListener('canplaythrough', function () {
+  //   console.log('音频已加载完毕，可以完整播放');
+  // });
 })
 
 
@@ -152,6 +198,10 @@ onUnmounted(() => {
   }
   document.querySelector('.enum_bgc')?.classList.remove('enum_bgc_animate')
   document.querySelector('.bear')?.classList.remove('bear_animation')
+
+  if (Interval) clearInterval(Interval)
+  if (Interval2) clearInterval(Interval2)
+
 })
 
 // 检测是否为移动设备
@@ -172,6 +222,33 @@ const handleScroll = (e: WheelEvent) => {
 // 移动端触摸事件处理
 const handleTouchStart = (e: TouchEvent) => {
   touchStartY = e.touches[0].clientY
+}
+
+// 首页动画效果
+const handle_ball_annimate = () => {
+  const balls = document.querySelectorAll('.ball-item') as NodeListOf<HTMLElement>
+  Interval = window.setInterval(() => {
+    balls.forEach((ball) => {
+      const sign1 = Math.random() < 0.5 ? -1 : 1
+      const sign2 = Math.random() < 0.5 ? -1 : 1
+      const top = Number(ball.style.getPropertyValue('--top').slice(0, -1))
+      const left = Number(ball.style.getPropertyValue('--left').slice(0, -1))
+      let top2 = top + sign1 * Math.random() * 10
+      let left2 = left + sign2 * Math.random() * 10
+      if (top2 < 0 || top2 > 100) top2 = 50 + sign1 * 10
+      if (left2 < 0 || left2 > 100) left2 = 50 + sign2 * 10
+      ball.style.setProperty('--top', `${top2}%`)
+      ball.style.setProperty('--left', `${left2}%`)
+      ball.style.setProperty('--width', `${Math.random() * 150 + 50}px`)
+    })
+  }, 2000)
+  const ballContainer = document.querySelector('.ball-container') as HTMLElement
+  let sign = 1
+  Interval2 = window.setInterval(() => {
+    const h = Number(ballContainer.style.getPropertyValue('--h'))
+    if (h < 0 || h > 360) sign = -sign
+    ballContainer.style.setProperty('--h', `${h + sign * 1}`)
+  }, 100)
 }
 
 const handleTouchMove = (e: TouchEvent) => {
@@ -318,16 +395,16 @@ const show_pic = (src: string, index: number) => {
     isLong.value = true
   }
 }
-const get_music = async () => {
-  const res = await Myaxios.get('/music/get')
-  console.log(res.data)
-  if (res.data.status === 1) {
-    music_pic.value = res.data.message.picture
-    music_src.value = res.data.message.url
-  } else {
-    show_control.value = false
-  }
-}
+// const get_music = async () => {
+//   const res = await Myaxios.get('/music/get')
+//   console.log(res.data)
+//   if (res.data.status === 1) {
+//     music_pic.value = res.data.message.picture
+//     music_src.value = res.data.message.url
+//   } else {
+//     show_control.value = false
+//   }
+// }
 
 const on_music_play = () => {
   const audio = document.querySelector('.audio') as HTMLAudioElement;
@@ -366,16 +443,18 @@ const resetMusicAnimation = () => {
       <div class="container" v-show="showContainer">
         <img src="https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/icon.png" alt="菜单"
           class="enum_icon" @click="to_enum" :class="{ 'mobile-enum-icon': isMobile }" loading="lazy" />
-        <Transition>
+        <!-- <Transition>
           <div class="enum_text" v-if="ifShow" :class="{ 'mobile-enum-text': isMobile }">点我试试!</div>
-        </Transition>
+        </Transition> -->
 
         <!-- 音乐播放器 -->
-        <audio :src="music_src" class="audio" :loop="true" v-if="!isMobile"></audio>
-        <div class="music_record" :style="{
-          background: music_pic ? `url(${music_pic}) no-repeat center center` : '#fff',
-          'background-size': 'cover', 'animation-play-state': music_play ? 'running' : 'paused'
-        }" @mouseenter="show_control = true" @mouseleave="show_control = false" v-if="!isMobile">
+        <audio :src="music_src" class="audio" :loop="true" v-if="!isMobile && false"></audio>
+        <div class="music_record" @mouseenter="show_control = true" @mouseleave="show_control = false"
+          v-if="!isMobile && false">
+          <div class="music_background" :style="{
+            background: music_pic ? `url(${music_pic}) no-repeat center center` : '#fff',
+            'background-size': 'cover', 'animation-play-state': music_play ? 'running' : 'paused'
+          }"></div>
           <Transition name="fade">
             <div class="music_control" v-show="show_control"
               :style="{ 'animation-play-state': music_play ? 'running' : 'paused' }">
@@ -396,6 +475,15 @@ const resetMusicAnimation = () => {
                 style="height: 100vh">
                 <!-- 确保每个部分的高度不超过视口 -->
                 <div class="title_bgc">
+                  <div class="ball-bgc" :style="{ top: isMobile ? '75vh' : '20vh' }"></div>
+                  <div class="ball-bgc"></div>
+                  <div class="ball-bgc"></div>
+                  <div class="ball-container">
+                    <div class="ball-main ball" :style="{ top: isMobile ? '40%' : '50%' }"></div>
+                    <div class="ball-item ball" v-for="i in 5" :key="i"
+                      :style="{ '--width': `${Math.random() * 150 + 50}px`, '--top': `${(-1) ** i * Math.random() * 90}% `, '--left': `${(-1) ** i * Math.random() * 70}%` }">
+                    </div>
+                  </div>
                   <h1 class="title" :class="{ 'mobile-container-title': isMobile }">
                     <span v-for="(char, index) in '梦翔工作室'" :key="index" class="char"
                       :style="{ 'animation-delay': `${index * 0.4}s` }">{{ char }}</span>
@@ -409,6 +497,11 @@ const resetMusicAnimation = () => {
                 style="height: 100vh">
                 <!-- 确保每个部分的高度不超过视口 -->
                 <div class="about_us">
+                  <div class="static-ball" v-for="(ballStyle, i) in part2BallStyles" :key="i" :style="{
+                    'top': ballStyle.top, 'left': ballStyle.left, 'width': ballStyle.width,
+                    '--r': ballStyle.r, '--g': ballStyle.g, '--b': ballStyle.b
+                  }">
+                  </div>
                   <div class="context">
                     <div class="section_title" :class="{ 'mobile_second_title': isMobile }">关于我们</div>
                     <div class="line" :class="{ 'mobile-line': isMobile }"></div>
@@ -451,6 +544,11 @@ const resetMusicAnimation = () => {
                 :class="{ active: currentIndex.includes(2) || currentIndex.includes(3) }" style="height: 100vh">
                 <!-- 确保每个部分的高度不超过视口 -->
                 <div class="award" style="display: flex;flex-direction: column;">
+                  <div class="static-ball" v-for="(ballStyle, i) in part3BallStyles" :key="i" :style="{
+                    'top': ballStyle.top, 'left': ballStyle.left, 'width': ballStyle.width,
+                    '--r': ballStyle.r, '--g': ballStyle.g, '--b': ballStyle.b
+                  }">
+                  </div>
                   <div class="context" :style="{ 'padding-bottom': isMobile ? '3vh' : '5vh' }">
                     <div class="section_title" :class="{ 'mobile_second_title': isMobile }">我们的优势</div>
                     <div class="line" :class="{ 'mobile-line': isMobile }"
@@ -536,7 +634,7 @@ const resetMusicAnimation = () => {
                       <div class="bottom-box">
                         <div class="bottom-title">版权声明</div>
                         <div class="bottom-content">
-                          @2025 梦翔工作室 版权所有<br>
+                          2025 梦翔工作室 © 版权所有<br>
                           ICP备案号：浙ICP备2025172341号<br>
                           <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=41010402003147">
                             <img src="../../assets/police.png" alt=""
@@ -677,15 +775,31 @@ const resetMusicAnimation = () => {
 }
 
 .enum_icon {
+  --r: 255;
+  --g: 220;
+  --b: 0;
   position: fixed;
   top: 60px;
   right: 60px;
   width: 60px;
   z-index: 2;
+  border-radius: 50%;
+  box-shadow: rgba(var(--r), var(--g), var(--b), 1) 0 0 0 1px;
+  animation: shadow-animate 2s ease-in-out infinite;
 }
 
 .enum_icon:hover {
   cursor: pointer;
+}
+
+@keyframes shadow-animate {
+  0% {
+    box-shadow: rgba(var(--r), var(--g), var(--b), 1) 0 0 0 0px;
+  }
+
+  100% {
+    box-shadow: rgba(var(--r), var(--g), var(--b), 0) 0 0 0 15px;
+  }
 }
 
 .enum_text {
@@ -749,19 +863,109 @@ a {
   font-size: 80px;
   font-weight: bold;
   color: #000;
-  background: url('https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/main_pic4.jpg') no-repeat center;
-  background-size: cover;
+  background: #161d26;
+  mix-blend-mode: lighten;
 }
 
-.title_bgc::before {
-  content: '';
+.ball-container {
+  --h: 100;
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: hwb(var(--h) 9% 85%);
+  filter: contrast(1000%);
+  overflow: hidden;
+  mix-blend-mode: lighten;
+}
+
+.ball-bgc {
+  position: absolute;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: white;
+  filter: blur(.5rem);
+}
+
+.ball-bgc:nth-child(1) {
+  top: 20vh;
+  left: 5vw;
+  width: 15vmax;
+}
+
+.ball-bgc:nth-child(2) {
+  top: 18vh;
+  right: 5vw;
+  width: 10vmax;
+}
+
+.ball-bgc:nth-child(3) {
+  bottom: 4vh;
+  right: 15vw;
+  width: 5vmax;
+}
+
+.ball {
+  background: white;
+  border-radius: 50%;
+  filter: blur(2.5rem);
+  transition: all 2s ease;
+}
+
+.ball-main {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 38vmax;
+  aspect-ratio: 1;
+}
+
+.ball-main::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50vmax;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 70px solid white;
+  border-style: dashed;
+  transform-origin: 50% 50%;
+  animation: rotateion 10s linear infinite;
+}
+
+@keyframes rotateion {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.ball-item {
+  position: absolute;
+  width: var(--width);
+  top: var(--top);
+  left: var(--left);
+  aspect-ratio: 1;
+}
+
+.static-ball {
+  --r: 255;
+  --g: 255;
+  --b: 255;
+  position: absolute;
+  width: 330px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(var(--r), var(--g), var(--b), 1);
+  filter: blur(.5rem);
+  animation: shadow-animate 2s ease-in-out infinite;
 }
 
 @keyframes char_appear {
@@ -785,6 +989,8 @@ a {
   color: white;
   display: flex;
   justify-content: center;
+  mix-blend-mode: difference;
+  text-shadow: 2px 2px 0 black, 4px 4px 0 rgb(255, 64, 0), 6px 6px 0 rgb(255, 213, 0);
 }
 
 .char {
@@ -799,10 +1005,14 @@ a {
 }
 
 .section_title {
+  position: relative;
   text-align: center;
+  text-shadow: 1px 1px 0 red, 2px 1px 0 rgb(255, 64, 0), 3px 2px 0 rgb(255, 213, 0);
   padding-top: 50px;
   font-size: 30px;
   font-weight: 700;
+  color: #fff;
+  mix-blend-mode: difference;
 }
 
 .line {
@@ -916,7 +1126,8 @@ a {
   min-height: 100vh;
   background-size: cover;
   line-height: 45px;
-  background-color: #161d26;
+  background-color: #232326;
+  overflow: hidden;
 }
 
 .about_us::before,
@@ -946,14 +1157,14 @@ a {
   cursor: not-allowed;
 }
 
-.scroll-section {
+/* .scroll-section {
   opacity: 0;
   transition: opacity 0.8s ease-in-out;
 }
 
 .scroll-section.active {
   opacity: 1;
-}
+} */
 
 ::v-deep .el-carousel__indicators--horizontal {
   display: none;
@@ -970,7 +1181,6 @@ a {
   position: relative;
   width: 100vw;
   flex: 1;
-  background-color: #161d26;
   padding-left: 8vw;
   padding-right: 8vw;
   padding-top: 5vh;
@@ -1003,6 +1213,7 @@ a {
   margin: 1vh;
   width: 100%;
   text-align: center;
+  mix-blend-mode: difference;
 }
 
 .part3-context {
@@ -1012,7 +1223,8 @@ a {
   margin-top: 1vh;
   padding-left: 2vw;
   line-height: 20px;
-  color: #9ca3af;
+  color: #d1dbec;
+  mix-blend-mode: difference;
 }
 
 /* #endregion */
@@ -1323,9 +1535,17 @@ a {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  z-index: 1;
-  animation: rotate 5s infinite linear;
+  z-index: 3;
   transition: all .3s;
+}
+
+.music_background {
+  position: absolute;
+  transform-origin: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  animation: rotate 5s infinite linear;
 }
 
 .music_control {
@@ -1334,8 +1554,7 @@ a {
   height: 100px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 3;
-  animation: reverse_rotate 5s infinite linear;
+  z-index: 4;
 }
 
 .music_record::after {
@@ -1348,7 +1567,7 @@ a {
   height: 40px;
   background-color: #000;
   border-radius: 50%;
-  z-index: 2;
+  z-index: 3;
 }
 
 .music_show {
@@ -1421,16 +1640,6 @@ a {
 
   100% {
     transform: rotate(360deg);
-  }
-}
-
-@keyframes reverse_rotate {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(-360deg);
   }
 }
 
