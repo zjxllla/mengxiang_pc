@@ -8,6 +8,7 @@ import { baseURL } from '../../axios';
 const globalStore = useGlobalStore()
 const back_enum = globalStore.getBackto_enum()
 const containerRef = ref<HTMLElement | null>(null)
+const awardRef = ref<HTMLImageElement | null>(null)
 const currentIndex = ref([0])
 const sections = ['#part1', '#part2', '#part3', '#part4']
 const delta = ref(0)
@@ -22,15 +23,15 @@ const start_time = ref(0)
 const end_time = ref(0)
 const stay_time = ref(0)
 const awards_pics = ref([
-  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic1.png',
-  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic2.jpg',
-  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic3.jpg',
-  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic4.png',
-  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic5.png',
-  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic6.jpg',
-  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic7.png',
-  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic8.png',
-  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic9.jpg',
+  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic1_compressed.png',
+  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic2_compressed.jpg',
+  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic3_compressed.jpg',
+  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic4_compressed.png',
+  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic5_compressed.png',
+  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic6_compressed.jpg',
+  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic7_compressed.png',
+  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic8_compressed.png',
+  'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/award_pic9_compressed.jpg',
 ])
 const music_src = ref('')
 const music_pic = ref('')
@@ -76,13 +77,28 @@ const initBallStyles = () => {
   }))
 }
 
-// 预加载轮播图片，提高用户体验
-const preloadImages = () => {
-  awards_pics.value.forEach((src) => {
-    const img = new Image()
-    img.src = src
-  })
+// 轮播当前索引，仅对当前及前后一项设置 src，实现按需加载
+const awardsCarouselIndex = ref(0)
+let carouselImages: NodeListOf<HTMLImageElement> | null = null
+const getAwardImgSrc = (index: number): string | undefined => {
+  if (!carouselImages) return
+  const n = awards_pics.value.length
+  const prev = (awardsCarouselIndex.value - 1 + n) % n
+  const next = (awardsCarouselIndex.value + 1) % n
+  const shouldLoad = index === awardsCarouselIndex.value || index === prev || index === next
+  if (shouldLoad) {
+    if (carouselImages[index].src === '')
+      carouselImages[index].src = awards_pics.value[index]
+    if (carouselImages[prev].src === '')
+      carouselImages[prev].src = awards_pics.value[prev]
+    if (carouselImages[next].src === '')
+      carouselImages[next].src = awards_pics.value[next]
+  }
 }
+const onAwardsCarouselChange = (current: number) => {
+  awardsCarouselIndex.value = current
+}
+
 const showDialog = ref(false)
 const dialogImageUrl = ref('')
 const isLong = ref(false)
@@ -95,11 +111,13 @@ onMounted(() => {
   // 初始化 static-ball 的随机样式
   initBallStyles()
 
+  carouselImages = document.querySelectorAll('.carousel-img')
+
   // 异步更新网站访问量，不阻塞页面渲染
   Myaxios.get('/ip/get').catch(err => console.error('Failed to get IP:', err))
 
   // 预加载轮播图片
-  preloadImages()
+  // preloadImages()
 
   start_time.value = Math.floor(+new Date() / 1000)
 
@@ -389,8 +407,11 @@ const show_pic = (src: string, index: number) => {
   if (isMobile.value) {
     return
   }
-  dialogImageUrl.value = src
   showDialog.value = true
+  setTimeout(() => {
+    if (!awardRef.value) return
+    dialogImageUrl.value = src
+  }, 0)
   if (index === 3 || index === 6 || index === 7 || index === 8) {
     isLong.value = true
   }
@@ -557,16 +578,16 @@ const resetMusicAnimation = () => {
                       style="display: flex; justify-content: center; align-items: center; height: 100%;margin-top: 0;overflow: hidden;">
 
                       <el-carousel indicator-position="outside" :interval="5000" :height="isMobile ? '20vh' : '40vh'"
-                        :style="isMobile ? 'width:70vw' : 'width:60vw'">
+                        :style="isMobile ? 'width:70vw' : 'width:60vw'" @change="onAwardsCarouselChange">
                         <el-carousel-item v-for="(item, index) in awards_pics" :key="index"
                           @click="show_pic(item, index)">
-                          <img :src="item" alt="" style="height: 100%; object-fit: fill;" loading="lazy">
+                          <img class="carousel-img" :src="getAwardImgSrc(index)" :data-src="item" alt="">
                         </el-carousel-item>
                       </el-carousel>
                       <el-dialog v-model="showDialog" width="600px" :draggable="true" top="10vh"
                         custom-class="image-dialog" @close="isLong = false">
                         <div class="dialog-image-container">
-                          <img :src="dialogImageUrl" alt="Preview Image" class="dialog-image"
+                          <img :src="dialogImageUrl" alt="Preview Image" class="dialog-image" ref="awardRef"
                             :style="{ width: isLong ? '400px' : '100%' }" />
                         </div>
                       </el-dialog>
@@ -1510,8 +1531,14 @@ a {
   flex: 1;
 }
 
+.carousel-img {
+  height: 100%;
+  object-fit: fill;
+}
+
 /* 图片容器样式 */
 .dialog-image-container {
+  position: relative;
   width: 100%;
   height: 100%;
   overflow: auto;
