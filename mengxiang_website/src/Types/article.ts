@@ -1,33 +1,35 @@
 export interface article {
   id: number
-  account: ''
-  avatar: ''
-  title: ''
-  content: ''
-  like_num: 0
-  time: ''
-  image: ''
-  name: ''
+  account: string
+  avatar: string
+  title: string
+  content: string
+  like_num: number
+  time: string
+  image: string
+  name: string
+  gender?: string
 }
 export interface blog {
   id: number
-  account: ''
-  avatar: ''
-  name: ''
-  title: ''
-  content: ''
-  like_num: 0
-  time: ''
-  introduction: ''
-  cate: ''
+  account: string
+  avatar: string
+  name: string
+  title: string
+  content: string
+  like_num: number
+  time: string
+  introduction: string
+  cate: string
+  gender?: string
 }
 export interface Comment {
   id: number
-  account: ''
-  avatar: ''
-  name: ''
-  content: ''
-  time: ''
+  account: string
+  avatar: string
+  name: string
+  content: string
+  time: string
 }
 
 export type like = {

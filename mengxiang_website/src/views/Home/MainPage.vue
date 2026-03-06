@@ -37,45 +37,6 @@ const music_src = ref('')
 const music_pic = ref('')
 const music_play = ref(false)
 const show_control = ref(true)
-// 存储 static-ball 的随机样式，避免重新渲染时位置改变
-const part2BallStyles = ref<Array<{
-  top: string
-  left: string
-  width: string
-  r: string
-  g: string
-  b: string
-}>>([])
-const part3BallStyles = ref<Array<{
-  top: string
-  left: string
-  width: string
-  r: string
-  g: string
-  b: string
-}>>([])
-
-// 初始化 static-ball 的随机样式
-const initBallStyles = () => {
-  // 初始化 part2 的 8 个球
-  part2BallStyles.value = Array.from({ length: 6 }, () => ({
-    top: `${Math.random() * 70 + 5}%`,
-    left: `${Math.random() * 70 + 5}%`,
-    width: `${Math.random() * 20 + 5}vmax`,
-    r: `${Math.floor(Math.random() * 128) + 128}`,
-    g: `${Math.floor(Math.random() * 128) + 128}`,
-    b: `${Math.floor(Math.random() * 128) + 128}`
-  }))
-  // 初始化 part3 的 8 个球
-  part3BallStyles.value = Array.from({ length: 6 }, () => ({
-    top: `${Math.random() * 70 + 5}%`,
-    left: `${Math.random() * 70 + 5}%`,
-    width: `${Math.random() * 20 + 5}vmax`,
-    r: `${Math.floor(Math.random() * 128) + 128}`,
-    g: `${Math.floor(Math.random() * 128) + 128}`,
-    b: `${Math.floor(Math.random() * 128) + 128}`
-  }))
-}
 
 // 轮播当前索引，仅对当前及前后一项设置 src，实现按需加载
 const awardsCarouselIndex = ref(0)
@@ -108,9 +69,6 @@ let Interval2: number | null = null
 // 控制加载屏幕的显示
 const showLoading = ref(true)
 onMounted(() => {
-  // 初始化 static-ball 的随机样式
-  initBallStyles()
-
   carouselImages = document.querySelectorAll('.carousel-img')
 
   // 异步更新网站访问量，不阻塞页面渲染
@@ -518,11 +476,6 @@ const resetMusicAnimation = () => {
                 style="height: 100vh">
                 <!-- 确保每个部分的高度不超过视口 -->
                 <div class="about_us">
-                  <div class="static-ball" v-for="(ballStyle, i) in part2BallStyles" :key="i" :style="{
-                    'top': ballStyle.top, 'left': ballStyle.left, 'width': ballStyle.width,
-                    '--r': ballStyle.r, '--g': ballStyle.g, '--b': ballStyle.b
-                  }">
-                  </div>
                   <div class="context">
                     <div class="section_title" :class="{ 'mobile_second_title': isMobile }">关于我们</div>
                     <div class="line" :class="{ 'mobile-line': isMobile }"></div>
@@ -565,11 +518,6 @@ const resetMusicAnimation = () => {
                 :class="{ active: currentIndex.includes(2) || currentIndex.includes(3) }" style="height: 100vh">
                 <!-- 确保每个部分的高度不超过视口 -->
                 <div class="award" style="display: flex;flex-direction: column;">
-                  <div class="static-ball" v-for="(ballStyle, i) in part3BallStyles" :key="i" :style="{
-                    'top': ballStyle.top, 'left': ballStyle.left, 'width': ballStyle.width,
-                    '--r': ballStyle.r, '--g': ballStyle.g, '--b': ballStyle.b
-                  }">
-                  </div>
                   <div class="context" :style="{ 'padding-bottom': isMobile ? '3vh' : '5vh' }">
                     <div class="section_title" :class="{ 'mobile_second_title': isMobile }">我们的优势</div>
                     <div class="line" :class="{ 'mobile-line': isMobile }"
@@ -976,19 +924,6 @@ a {
   aspect-ratio: 1;
 }
 
-.static-ball {
-  --r: 255;
-  --g: 255;
-  --b: 255;
-  position: absolute;
-  width: 330px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: rgba(var(--r), var(--g), var(--b), 1);
-  filter: blur(.5rem);
-  animation: shadow-animate 2s ease-in-out infinite;
-}
-
 @keyframes char_appear {
   0% {
     opacity: 0;
@@ -1063,9 +998,22 @@ a {
   gap: 10px;
   width: 20vw;
   height: 50vh;
-  background: linear-gradient(to bottom right, #1f2937, #111827);
-  border-radius: 1vw;
-  box-shadow: rgba(255, 255, 255, 0.3) 0px 10px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 16px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+
+.box:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .box_img {

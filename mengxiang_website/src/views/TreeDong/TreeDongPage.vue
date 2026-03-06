@@ -285,15 +285,6 @@ const getArticleList = async () => {
     // 等待 DOM 更新
     await nextTick()
     initObserver()
-    article_list.value.forEach(item => {
-      const account = item.account
-      Myaxios.get('/user/info', { params: { account: account } }).then(res => {
-        if (res.data.status === 1) {
-          item.avatar = res.data.message.avatar ? res.data.message.avatar : res.data.message.gender === '男' ? avatar_boy : avatar_gril
-          item.name = res.data.message.nickname || res.data.message.name
-        }
-      })
-    })
     article_list.value.reverse()
     dealTime(article_list.value as article[])
   }
@@ -544,7 +535,8 @@ const to_home = () => {
           v-for="(item, index) in visible_list" :key="item.id" :id="String(index)"
           :class="{ 'mobile-main-card': isMobile }">
           <div class="card-top">
-            <div class="card-avatar"> <img :src="item.avatar" alt="" class="card-avatar-img" loading="lazy"> </div>
+            <div class="card-avatar"> <img :src="item.avatar ? item.avatar : item.gender === '男' ? avatar_boy : avatar_gril"
+                alt="" class="card-avatar-img" loading="lazy"> </div>
             <div class="card-top-aside">
               <div class="top-name">{{ item.name }}</div>
               <div class="top-time" :style="{ color: isDark_animation ? '#ccd0db' : '#4b5563' }">{{ item.time }}</div>
@@ -618,7 +610,7 @@ const to_home = () => {
           <div class="aside-card1-bottom" v-if="isLogin">
             <div class="card1-bottom-name" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }">{{
               user_info.nickname || user_info.name
-            }}</div>
+              }}</div>
             <div class="card1-bottom-text" :style="{ color: isDark_animation ? '#d1d5db' : '#203656' }">
               {{ user_info.motto }}</div>
           </div>

@@ -229,19 +229,16 @@ const cancel_blog = () => {
 const get_blog = async () => {
   const res1 = await axios.get('/blog/get')
   if (res1.data.status === 1) {
+    res1.data.message.forEach((item: blog) => {
+      if (item.avatar) return
+      item.avatar = item.gender === '男' ? avatar_boy : avatar_gril
+    })
     blog_list.value = res1.data.message
     blog_list.value = blog_list.value.reverse()
     await nextTick()
     visible_list.value = blog_list.value.slice(0, 3)
     await nextTick()
     initObserver()
-    blog_list.value.forEach(async (item) => {
-      const res2 = await axios.get('/user/info', { params: { account: item.account } })
-      if (res2.data.status === 1) {
-        item.name = res2.data.message.nickname || res2.data.message.name
-        item.avatar = res2.data.message.avatar ? res2.data.message.avatar : res2.data.message.gender === '男' ? avatar_boy : avatar_gril
-      }
-    })
     console.log(blog_list.value)
   }
 }
