@@ -1,22 +1,21 @@
 <script setup lang="ts">
-import { ref, onBeforeMount, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onBeforeMount } from 'vue'
 import { Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
-import { useGlobalStore } from '../../stores';
+import { useGlobalStore } from '../../stores'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import BackBtn from '@/components/BackBtn.vue';
+import BackBtn from '@/components/BackBtn.vue'
 import type { User } from '../../Types/user'
 import axios from '@/axios'
 import { baseURL } from '../../axios'
+import CodeBgc from '@/components/CodeBgc.vue'
 
-const drawer_data = ref({})
+const drawer_data = ref<User | null>()
 const drawer = ref(false)
 const start_time = ref(0)
 const end_time = ref(0)
 const stay_time = ref(0)
-const letter = "Mengxiang  Mengxiang  Mengxiang  Mengxiang  Mengxiang  Mengxiang".split('')
-const bgc_timer = ref<number | null>(null)
 
 const globalStore = useGlobalStore();
 const isMobile = ref(globalStore.isMobile);
@@ -132,46 +131,10 @@ const expand = (num: number) => {
   drawer.value = true
   drawer_data.value = freshmanMembers.value[num]
 }
-
-let canvas: HTMLCanvasElement;
-let ctx: any;
-const drops: number[] = []
-const font_size = 10
-const colors = ['#05FF00', '#00BFFF', '#FF4500', '#FFA500', '#C202C2'];
-let color: string;
-onMounted(() => {
-  canvas = document.getElementById('myCanvas') as HTMLCanvasElement;
-  ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  color = colors[Math.floor(Math.random() * colors.length)]
-  const columns = canvas.width / font_size;
-  for (let i = 0; i < columns; i++) {
-    drops[i] = 1;
-  }
-  bgc_timer.value = window.setInterval(draw_background, 30);
-})
-const draw_background = () => {
-  ctx.fillStyle = 'rgba(0,0,0,.1)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = color
-  for (let i = 0; i < drops.length; i++) {
-    const text = letter[Math.floor(Math.random() * letter.length)]
-    ctx.fillText(text, i * font_size, drops[i] * font_size);
-    drops[i]++
-    if (drops[i] * font_size > canvas.height && Math.random() > 0.95) {
-      drops[i] = 0;
-    }
-  }
-}
-onBeforeUnmount(() => {
-  if (bgc_timer.value !== null && bgc_timer.value !== undefined) {
-    clearInterval(bgc_timer.value as number)
-  }
-})
 </script>
 
 <template>
+  <CodeBgc></CodeBgc>
   <div class="back" :class="{ Mobile_back: isMobile }">
     <BackBtn @click="back"></BackBtn>
   </div>
@@ -193,7 +156,6 @@ onBeforeUnmount(() => {
       </template>
     </el-dropdown>
   </div>
-  <canvas id="myCanvas" class="canvas"></canvas>
 
   <div class="waterfall_container">
     <div class="title">成员信息</div>
@@ -211,7 +173,7 @@ onBeforeUnmount(() => {
             <p><i class="iconfont icon-xingbie" style="color: chocolate; margin-right: 10px"></i> {{ item.gender }}</p>
             <p><i class="iconfont icon-nianji" style="margin-right: 10px"></i> {{ item.grade }}</p>
             <p class="tel-info"><i class="iconfont icon-lianxi" style="color: gray;margin-right: 10px"></i> {{ item.tel
-            }} <span class="copy-hint" @click="copy(index, $event)">(复制)</span></p>
+              }} <span class="copy-hint" @click="copy(index, $event)">(复制)</span></p>
             <p><i class="iconfont icon-a-01" style="color: blue;margin-right: 6px"></i> {{ item.motto }}</p>
           </div>
         </div>
@@ -222,30 +184,29 @@ onBeforeUnmount(() => {
   <el-drawer v-model="drawer" :with-header="false" size="28%" v-if="!isMobile">
     <div class="drawer_card">
       <div class="avatar">
-        <img
-          :src="(drawer_data as any).avatar ? (drawer_data as any).avatar : (drawer_data as any).gender === '男' ? avatar_boy : avatar_gril"
+        <img :src="drawer_data?.avatar ? drawer_data?.avatar : drawer_data?.gender === '男' ? avatar_boy : avatar_gril"
           alt="" class="drawer_img">
       </div>
       <div class="drawer_content">
         <h2 class="drawer_name">
           <i class="iconfont icon-mingziname" style="font-size: 5vw; margin-right: 10px;color: skyblue;"></i>
-          {{ (drawer_data as any).name }}
+          {{ drawer_data?.name }}
         </h2>
         <div class="drawer_gender">
           <p>性别</p>
-          <p style="margin-left:3.5vw;margin-top: 1vh"> {{ (drawer_data as any).gender }}</p>
+          <p style="margin-left:3.5vw;margin-top: 1vh"> {{ drawer_data?.gender }}</p>
         </div>
         <div class="drawer_grade">
           <p>年级</p>
-          <p style="margin-left:3.5vw;margin-top: 1vh"> {{ (drawer_data as any).grade }}</p>
+          <p style="margin-left:3.5vw;margin-top: 1vh"> {{ drawer_data?.grade }}</p>
         </div>
         <div class="drawer_tel">
           <p>联系</p>
-          <p style="margin-left:3.5vw;margin-top: 1vh">{{ (drawer_data as any).tel }}</p>
+          <p style="margin-left:3.5vw;margin-top: 1vh">{{ drawer_data?.tel }}</p>
         </div>
         <div class="drawer_motto">
           <i class="iconfont icon-a-01" style="color: blue;margin-right: 6px;font-size: 3vw"></i>
-          <p style="margin-left:2.5vw;margin-top: 1vh;"> {{ (drawer_data as any).motto }}</p>
+          <p style="margin-left:2.5vw;margin-top: 1vh;"> {{ drawer_data?.motto }}</p>
         </div>
       </div>
     </div>
@@ -323,18 +284,6 @@ onBeforeUnmount(() => {
   border-radius: 10px;
   overflow: hidden;
   transition: transform 0.3s ease-in-out;
-}
-
-#myCanvas {
-  width: 100vw;
-  height: 100vh;
-  position: fixed;
-  left: 0%;
-  top: 0%;
-  right: 0%;
-  bottom: 0%;
-  display: block;
-  z-index: 0;
 }
 
 @media (hover:hover) and (pointer:fine) {
