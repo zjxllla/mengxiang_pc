@@ -22,6 +22,8 @@ export interface blog {
   introduction: string
   cate: string
   gender?: string
+  number?: number
+  colorBgc?: string
 }
 export interface Comment {
   id: number

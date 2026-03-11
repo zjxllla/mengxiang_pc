@@ -10,6 +10,7 @@ const router = createRouter({
     { path: '/resource', component: () => import('@/views/TreeDong/TreeDongPage.vue') },
     { path: '/blog', component: () => import('@/views/Blog/BlogPage.vue') },
     { path: '/blog/detail', component: () => import('@/views/Blog/BlogDetail.vue') },
+    { path: '/blog/:id', component: () => import('@/views/Blog/BlogSelf.vue') },
     {
       path: '/user',
       component: () => import('@/views/User/UserLayout.vue'),

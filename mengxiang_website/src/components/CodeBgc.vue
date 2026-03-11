@@ -3,6 +3,14 @@ import { ref, onMounted, onBeforeUnmount } from "vue";
 
 const letter = "Mengxiang  Mengxiang  Mengxiang  Mengxiang  Mengxiang  Mengxiang".split('')
 
+const props = defineProps({
+  Color: {
+    type: String,
+    required: false,
+    default: '',
+  }
+})
+
 const bgc_timer = ref<number | null>(null)
 let canvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D | null;
@@ -16,12 +24,12 @@ onMounted(() => {
   ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  color = colors[Math.floor(Math.random() * colors.length)]
+  color = !props.Color ? colors[Math.floor(Math.random() * colors.length)] : props.Color
   const columns = canvas.width / font_size;
   for (let i = 0; i < columns; i++) {
     drops[i] = 1;
   }
-  bgc_timer.value = window.setInterval(draw_background, 30);
+  bgc_timer.value = window.setInterval(draw_background, 34);
 })
 const draw_background = () => {
   if (ctx === null) return
@@ -47,7 +55,7 @@ onBeforeUnmount(() => {
 <script lang="ts">
 // 显式添加默认导出
 export default {
-  name: 'CodeBgc'
+  name: 'CodeB'
 }
 </script>
 
