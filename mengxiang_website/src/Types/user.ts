@@ -6,4 +6,5 @@ export interface User {
   tel: string
   motto: string
   avatar: string
+  nickname?: string
 }

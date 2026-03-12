@@ -2,7 +2,7 @@
 import { ref, onBeforeMount } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { useGlobalStore } from '../../stores'
+import { useGlobalStore, useUserStore } from '../../stores'
 import axios from '../../axios'
 const user_info = ref({
   name: '',
@@ -14,6 +14,7 @@ const user_info = ref({
   nickname: ''
 })
 const globalStore = useGlobalStore()
+const userStore = useUserStore()
 const avatar = ref('')
 onBeforeMount(async () => {
   //  自动登录
@@ -60,6 +61,7 @@ const beforeAvatarUpload = (file: { type: string | string[] }) => {
 // 退出登录
 const logout = () => {
   globalStore.token = ''
+  userStore.set_account('')
   window.location.href = '/'
 }
 // 保存

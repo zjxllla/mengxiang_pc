@@ -1,11 +1,11 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4870560 */
-  src: url('iconfont.eot?t=1773224009252'); /* IE9 */
-  src: url('iconfont.eot?t=1773224009252#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('iconfont.woff2?t=1773224009252') format('woff2'),
-       url('iconfont.woff?t=1773224009252') format('woff'),
-       url('iconfont.ttf?t=1773224009252') format('truetype'),
-       url('iconfont.svg?t=1773224009252#iconfont') format('svg');
+  src: url('iconfont.eot?t=1773303454219'); /* IE9 */
+  src: url('iconfont.eot?t=1773303454219#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('iconfont.woff2?t=1773303454219') format('woff2'),
+       url('iconfont.woff?t=1773303454219') format('woff'),
+       url('iconfont.ttf?t=1773303454219') format('truetype'),
+       url('iconfont.svg?t=1773303454219#iconfont') format('svg');
 }
 
 .iconfont {
@@ -14,6 +14,42 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-emoji-really:before {
+  content: "\e62b";
+}
+
+.icon-emoji-blink-right:before {
+  content: "\e62d";
+}
+
+.icon-emoji-blink-left:before {
+  content: "\e62e";
+}
+
+.icon-emoji-talking-angry:before {
+  content: "\e62f";
+}
+
+.icon-emoji-satisfied:before {
+  content: "\e630";
+}
+
+.icon-emoji-look-down:before {
+  content: "\e631";
+}
+
+.icon-emoji-puzzled:before {
+  content: "\e632";
+}
+
+.icon-emoji-surprise:before {
+  content: "\e633";
+}
+
+.icon-emoji-talking-happy:before {
+  content: "\e634";
 }
 
 .icon-shouye:before {

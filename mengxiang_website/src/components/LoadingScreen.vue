@@ -20,6 +20,12 @@ defineExpose({
 })
 </script>
 
+<script lang="ts">
+export default {
+  name: 'LoadingScreen',
+}
+</script>
+
 
 <template>
   <Transition name="fade">

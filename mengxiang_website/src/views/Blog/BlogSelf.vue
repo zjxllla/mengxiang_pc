@@ -1,32 +1,43 @@
 <script setup lang="ts">
-import CodeBgc from '@/components/CodeBgc.vue';
+import StarBgc from '@/components/StarBgc.vue'
 import { useRoute } from 'vue-router'
 import { ref, onBeforeMount, onBeforeUnmount } from 'vue'
 import Myaxios from '@/axios'
 import { ElMessage } from 'element-plus';
 import type { blog } from '@/Types/article'
+import type { User } from '@/Types/user'
+import { useBlogStore, useUserStore } from '../../stores'
 
 const route = useRoute()
 const account = route.params.id
 const blogList = ref<[string, blog[]][]>([])
+const user = ref<User>()
 const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' })
+const cateList = ref<string[]>([])
+const blogStore = useBlogStore()
+const userStore = useUserStore()
 
 onBeforeMount(() => {
-  get_list()
+  getArticle()
 })
-const get_list = async () => {
+const getArticle = async () => {
   if (!account) {
     ElMessage.error('请在地址上携带账号参数')
   }
   const res = await Myaxios.post(`/blog/${account}`)
   if (res.data.status === 1) {
-    worker.postMessage(res.data.message)
+    user.value = res.data.message[1][0]
+    worker.postMessage(res.data.message[0])
     worker.onmessage = (e) => {
-      blogList.value = [...e.data]
-      console.log('主2：', blogList.value[0][1][1].title.charCodeAt(0))
+      blogList.value = [...e.data.listMap]
+      cateList.value = e.data.cates
+      console.log('cateList:', cateList.value)
     }
   } else {
-    console.log(res.data)
+    if (!user.value) ElMessage.error('请输入正确的账号')
+    setTimeout(() => {
+      goHome()
+    }, 500)
   }
 }
 
@@ -34,22 +45,46 @@ onBeforeUnmount(() => {
   worker.terminate()
 })
 
+// 返回首页
+const goHome = () => {
+  window.location.href = '/blog'
+}
+
+//  点击前往详情页
+const goDetail = async (blog: blog) => {
+  const isLove = await judgeLoved(blog.id)
+  blogStore.setLove(isLove!)
+  window.location.href = `/blog/detail?id=${blog.id}`
+}
+
+// 判断是否点赞
+const judgeLoved = async (id: number) => {
+  if (!userStore.get_account()) return
+  const { data } = await Myaxios.post(`/blog/like/${id}`, { account: '123456' })
+  return data.message.like === 1
+}
+
+
 </script>
 
 <template>
-  <CodeBgc></CodeBgc>
+  <StarBgc></StarBgc>
   <div class="container">
     <header class="header">
-      <i class="iconfont icon-shouye3 icon"></i>
+      <i class="iconfont icon-shouye3 icon" @click="goHome"></i>
+      <div class="head-text">欢迎来到 <span>{{ user?.nickname ? user?.nickname : user?.name }}</span> 的个人博客 </div>
+      <i class="iconfont icon-shouye3 icon" style="visibility: hidden;"></i>
     </header>
     <main class="main">
-      <section class="list-container">
+      <section class="list-container" v-if="blogList.length">
         <div class="list" v-for="(item, index) in blogList" :key="index">
           <div class="list-year">{{ item[0] }}</div>
-          <div class="list-item" v-for="(blog) in item[1]" :key="blog.id">
-            <div class="list-item-img" :style="{ background: blog.colorBgc }">{{ blog.title.slice(0, 4) }}</div>
+          <div class="list-item" v-for="blog in item[1]" :key="blog.id">
+            <div class="list-item-img" :style="{ background: blog.colorBgc }" @click="goDetail(blog)">
+              <i class="iconfont item-icon" :class="blog.icon"></i>
+            </div>
             <div div class="list-item-text">
-              <div class="item-title"> {{ blog.title }}</div>
+              <div class="item-title" @click="goDetail(blog)"> {{ blog.title }}</div>
               <div class="item-cate">
                 <span v-for="(cate) in blog.cate" :key="cate">{{ cate }}</span>
               </div>
@@ -58,7 +93,14 @@ onBeforeUnmount(() => {
           </div>
         </div>
       </section>
-      <aside class="aside"></aside>
+      <aside class="aside">
+        <div class="has-cate" v-if="cateList.length">
+          <span class="aside-cate" v-for="(cate, index) in cateList" :key="index">{{ cate }}</span>
+        </div>
+        <div class="no-cate" v-else>
+          <div class="no-cate-text">暂无文章</div>
+        </div>
+      </aside>
     </main>
   </div>
 </template>
@@ -91,6 +133,43 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
+.head-text {
+  font-size: 1.5rem;
+  color: white;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.head-text span {
+  font-style: italic;
+  margin: 0 10px;
+  color: transparent;
+  background-image: linear-gradient(90deg,
+      #ff6a00,
+      #ffd500,
+      #00d4ff,
+      #ff6a00,
+      /* 开头 */
+      #ffd500,
+      #00d4ff,
+      #ff6a00
+      /* 再重复一轮，形成长带子 */
+    );
+  background-clip: text;
+  background-size: 200% 100%;
+  animation: textAnimation 3s linear infinite;
+}
+
+@keyframes textAnimation {
+  from {
+    background-position: 0% 50%;
+  }
+
+  to {
+    background-position: 200% 50%;
+  }
+}
+
 .main {
   display: flex;
   justify-content: center;
@@ -116,7 +195,9 @@ onBeforeUnmount(() => {
   font-size: 1rem;
   font-weight: 500;
   color: white;
-  margin: 0 0 15px 5px;
+  margin: 0 0 10px 5px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .list-item {
@@ -133,12 +214,23 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 2rem;
   color: black;
   font-weight: 700;
   width: 150px;
   height: 80px;
   border-radius: 10px;
+  cursor: pointer;
+}
+
+.list-item-img:hover .item-icon {
+  transform: scale(1.2);
+}
+
+.item-icon {
+  font-size: 2.5rem;
+  color: white;
+  mix-blend-mode: difference;
+  transition: all 0.3s ease-in-out;
 }
 
 .list-item-text {
@@ -170,6 +262,12 @@ onBeforeUnmount(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.item-title:hover {
+  color: #ffc550;
 }
 
 .item-cate {
@@ -182,6 +280,12 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
+.item-cate span::before {
+  content: '#';
+  margin-right: 2px;
+  color: #7fecff;
+}
+
 /* #endregion */
 
 /* 侧边栏 */
@@ -189,8 +293,24 @@ onBeforeUnmount(() => {
   position: sticky;
   top: 75px;
   width: 25%;
-  height: 200px;
   background: rgba(50, 50, 50, 0.65);
   border-radius: 10px;
+  padding: 20px;
+  color: #dfdfdf;
+}
+
+.has-cate {
+  display: flex;
+  justify-content: start;
+  align-items: start;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.aside-cate {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 </style>

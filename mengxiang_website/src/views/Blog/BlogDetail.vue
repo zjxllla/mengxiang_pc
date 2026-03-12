@@ -6,10 +6,12 @@ import { baseURL } from '../../axios'
 import axios from '../../axios'
 import type { Comment, blog } from '../../Types/article'
 import BackBtn from '@/components/BackBtn.vue'
+import { useRoute } from 'vue-router'
 
 const globalStore = useGlobalStore()
 const userStore = useUserStore()
 const blogStore = useBlogStore()
+const route = useRoute()
 const bgcTimer = ref(0)
 const deg1 = ref(90)
 const deg2 = ref(180)
@@ -28,17 +30,18 @@ const stay_time = ref(0)
 const need_file = ref(false)
 
 onBeforeMount(async () => {
-  const urlParams = new URLSearchParams(window.location.search);
-
+  const type = route.query.type as string
+  let id = route.query.id as string || ''
   // 获取特定参数
-  const type = urlParams.get('type');
-  if (type === 'ask') {
+  if (type === 'ask' || id) {
     let blog_message = {} as blog
-    const res = await axios.get('/blog/get_by_id', { params: { id: 10 } })
+    if (type === 'ask') id = '10'
+    const res = await axios.get('/blog/get_by_id', { params: { id } })
     if (res.data.status === 1) {
       blog_message = res.data.message
       const res1 = await axios.get('/user/info', { params: { account: res.data.message.account } })
       if (res1.data.status === 1) {
+        console.log(res1.data.message)
         blog_message.avatar = res1.data.message.avatar ? res1.data.message.avatar : res1.data.message.gender === '男' ? avatar_boy : avatar_gril
         blog_message.name = res1.data.message.nickname || res1.data.message.name
         blogStore.setBlog(blog_message)

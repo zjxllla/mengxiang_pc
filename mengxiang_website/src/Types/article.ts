@@ -24,6 +24,7 @@ export interface blog {
   gender?: string
   number?: number
   colorBgc?: string
+  icon?: string
 }
 export interface Comment {
   id: number

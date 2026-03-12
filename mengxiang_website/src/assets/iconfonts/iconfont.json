@@ -6,6 +6,69 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "47003409",
+      "name": "emoji-really",
+      "font_class": "emoji-really",
+      "unicode": "e62b",
+      "unicode_decimal": 58923
+    },
+    {
+      "icon_id": "47003410",
+      "name": "emoji-blink-right",
+      "font_class": "emoji-blink-right",
+      "unicode": "e62d",
+      "unicode_decimal": 58925
+    },
+    {
+      "icon_id": "47003413",
+      "name": "emoji-blink-left",
+      "font_class": "emoji-blink-left",
+      "unicode": "e62e",
+      "unicode_decimal": 58926
+    },
+    {
+      "icon_id": "47003415",
+      "name": "emoji-talking-angry",
+      "font_class": "emoji-talking-angry",
+      "unicode": "e62f",
+      "unicode_decimal": 58927
+    },
+    {
+      "icon_id": "47003417",
+      "name": "emoji-satisfied",
+      "font_class": "emoji-satisfied",
+      "unicode": "e630",
+      "unicode_decimal": 58928
+    },
+    {
+      "icon_id": "47003419",
+      "name": "emoji-look-down",
+      "font_class": "emoji-look-down",
+      "unicode": "e631",
+      "unicode_decimal": 58929
+    },
+    {
+      "icon_id": "47003420",
+      "name": "emoji-puzzled",
+      "font_class": "emoji-puzzled",
+      "unicode": "e632",
+      "unicode_decimal": 58930
+    },
+    {
+      "icon_id": "47003422",
+      "name": "emoji-surprise",
+      "font_class": "emoji-surprise",
+      "unicode": "e633",
+      "unicode_decimal": 58931
+    },
+    {
+      "icon_id": "47003426",
+      "name": "emoji-talking-happy",
+      "font_class": "emoji-talking-happy",
+      "unicode": "e634",
+      "unicode_decimal": 58932
+    },
+    {
       "icon_id": "1183027",
       "name": "首页",
       "font_class": "shouye",
