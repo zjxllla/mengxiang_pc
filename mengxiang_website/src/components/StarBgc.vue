@@ -3,6 +3,13 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 type Ctx2D = CanvasRenderingContext2D
 
+const props = defineProps({
+  num: {
+    type: Number,
+    default: 120
+  },
+})
+
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 let ctx: Ctx2D | null = null
 
@@ -53,7 +60,7 @@ function resize() {
 
 function init() {
   particles = []
-  for (let i = 0; i < 120; i++) particles.push(new Particle())
+  for (let i = 0; i < props.num; i++) particles.push(new Particle())
 }
 
 function connect() {

@@ -6,7 +6,7 @@ import Myaxios from '@/axios'
 import { ElMessage } from 'element-plus';
 import type { blog } from '@/Types/article'
 import type { User } from '@/Types/user'
-import { useBlogStore, useUserStore } from '../../stores'
+import { useBlogStore, useUserStore, useGlobalStore } from '../../stores'
 
 const route = useRoute()
 const account = route.params.id
@@ -16,9 +16,12 @@ const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'modu
 const cateList = ref<string[]>([])
 const blogStore = useBlogStore()
 const userStore = useUserStore()
+const globalStore = useGlobalStore()
+const isMobile = judgeMobile()
 
 onBeforeMount(() => {
   getArticle()
+  console.log(isMobile)
 })
 const getArticle = async () => {
   if (!account) {
@@ -27,17 +30,20 @@ const getArticle = async () => {
   const res = await Myaxios.post(`/blog/${account}`)
   if (res.data.status === 1) {
     user.value = res.data.message[1][0]
+    console.log(user.value)
     worker.postMessage(res.data.message[0])
     worker.onmessage = (e) => {
       blogList.value = [...e.data.listMap]
       cateList.value = e.data.cates
-      console.log('cateList:', cateList.value)
     }
   } else {
-    if (!user.value) ElMessage.error('请输入正确的账号')
-    setTimeout(() => {
-      goHome()
-    }, 500)
+    console.log(res.data.message)
+    if (!user.value) {
+      ElMessage.error('请输入正确的账号')
+      setTimeout(() => {
+        goHome()
+      }, 500)
+    }
   }
 }
 
@@ -64,36 +70,49 @@ const judgeLoved = async (id: number) => {
   return data.message.like === 1
 }
 
+// 移动端判断
+function judgeMobile() {
+  const userAgent = navigator.userAgent || navigator.vendor
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+  globalStore.isMobile = isMobile
+  // 正则表达式匹配常见的移动设备关键字
+  return isMobile;
+}
+
 
 </script>
 
 <template>
-  <StarBgc></StarBgc>
+  <StarBgc :num="isMobile ? 35 : 120"></StarBgc>
   <div class="container">
     <header class="header">
       <i class="iconfont icon-shouye3 icon" @click="goHome"></i>
-      <div class="head-text">欢迎来到 <span>{{ user?.nickname ? user?.nickname : user?.name }}</span> 的个人博客 </div>
+      <div class="head-text" v-if="!isMobile">欢迎来到 <span>{{ user?.nickname ? user?.nickname : user?.name }}</span> 的个人博客
+      </div>
+      <div class="head-text" v-else><span>{{ user?.nickname ? user?.nickname : user?.name }}</span></div>
       <i class="iconfont icon-shouye3 icon" style="visibility: hidden;"></i>
     </header>
     <main class="main">
-      <section class="list-container" v-if="blogList.length">
+      <section class="list-container" v-if="blogList.length" :class="isMobile ? 'mobile-list-container' : ''">
         <div class="list" v-for="(item, index) in blogList" :key="index">
           <div class="list-year">{{ item[0] }}</div>
-          <div class="list-item" v-for="blog in item[1]" :key="blog.id">
-            <div class="list-item-img" :style="{ background: blog.colorBgc }" @click="goDetail(blog)">
+          <div class="list-item" v-for="blog in item[1]" :key="blog.id" :class="isMobile ? 'mobile-list-item' : ''">
+            <div class="list-item-img" :style="{ background: blog.colorBgc }" @click="goDetail(blog)"
+              :class="isMobile ? 'mobile-item-img' : ''">
               <i class="iconfont item-icon" :class="blog.icon"></i>
             </div>
-            <div div class="list-item-text">
-              <div class="item-title" @click="goDetail(blog)"> {{ blog.title }}</div>
+            <div div class="list-item-text" :class="isMobile ? 'mobile-item-text' : ''">
+              <div class="item-title" @click="goDetail(blog)" :style="{ fontSize: isMobile ? '1.2rem' : '1.5rem' }">
+                {{ blog.title }}</div>
               <div class="item-cate">
                 <span v-for="(cate) in blog.cate" :key="cate">{{ cate }}</span>
               </div>
             </div>
-            <div class="list-item-num">{{ blog.number }}</div>
+            <div class="list-item-num" :style="{ fontSize: isMobile ? '2rem' : '2.5rem' }">{{ blog.number }}</div>
           </div>
         </div>
       </section>
-      <aside class="aside">
+      <aside class="aside" v-if="!isMobile || blogList.length === 0" :style="{ width: isMobile ? '60%' : '25%' }">
         <div class="has-cate" v-if="cateList.length">
           <span class="aside-cate" v-for="(cate, index) in cateList" :key="index">{{ cate }}</span>
         </div>
@@ -112,6 +131,8 @@ const judgeLoved = async (id: number) => {
   overflow: scroll;
 }
 
+/* 头部 */
+/* #region */
 .header {
   position: sticky;
   top: 0;
@@ -170,6 +191,8 @@ const judgeLoved = async (id: number) => {
   }
 }
 
+/* #endregion */
+
 .main {
   display: flex;
   justify-content: center;
@@ -184,7 +207,7 @@ const judgeLoved = async (id: number) => {
 /* #region */
 .list-container {
   width: 65%;
-  min-height: calc(100vh - 90px);
+  min-height: 50vh;
   background: rgba(50, 50, 50, 0.65);
   border-radius: 10px;
   padding: 20px 15px;
@@ -212,6 +235,7 @@ const judgeLoved = async (id: number) => {
 
 .list-item-img {
   display: flex;
+  flex-shrink: 0;
   justify-content: center;
   align-items: center;
   color: black;
@@ -235,6 +259,7 @@ const judgeLoved = async (id: number) => {
 
 .list-item-text {
   flex: 1;
+  width: calc(100% - 40vw);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -257,6 +282,7 @@ const judgeLoved = async (id: number) => {
 }
 
 .item-title {
+  width: 100%;
   font-size: 1.5rem;
   font-weight: 800;
   overflow: hidden;
@@ -271,6 +297,7 @@ const judgeLoved = async (id: number) => {
 }
 
 .item-cate {
+  width: 100%;
   display: flex;
   gap: 10px;
   font-size: 0.8rem;
@@ -312,5 +339,24 @@ const judgeLoved = async (id: number) => {
   padding: 0 10px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* mobile 样式 */
+.mobile-list-container {
+  width: 98%;
+}
+
+.mobile-item-img {
+  width: 20vw;
+  height: 10vh;
+  margin-right: 3vw;
+}
+
+.mobile-item-text {
+  height: 10vh;
+}
+
+.mobile-list-item {
+  margin-bottom: 10px;
 }
 </style>
