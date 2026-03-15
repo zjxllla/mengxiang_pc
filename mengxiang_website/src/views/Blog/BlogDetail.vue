@@ -190,6 +190,11 @@ const scroll_to_top = () => {
 const download_file = () => {
   window.open('http://101.201.170.43:8888/down/ux12kGEtkPWo.xlsx', '_blank')
 }
+
+// 前往个人博客
+const goSelfBlog = () => {
+  window.location.href = `/blog/${blog.value?.account}`
+}
 </script>
 
 <template>
@@ -210,7 +215,7 @@ const download_file = () => {
               :style="{ color: Love ? 'red' : '#8c8c8f' }" style="font-size: 2rem;"></i></div>
         </div>
         <div class="article-info">
-          <div class="article-info-avatar">
+          <div class="article-info-avatar" @click="goSelfBlog">
             <img :src="blog?.avatar" style="width: 100%;height: 100%;object-fit: cover;border-radius: 50%;"
               loading="lazy">
           </div>
@@ -362,6 +367,12 @@ const download_file = () => {
   height: 60px;
   border-radius: 50%;
   margin-right: 1vw;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.article-info-avatar:hover {
+  border: 5px solid rgba(0, 0, 0, 0.3);
 }
 
 .article-user-info {

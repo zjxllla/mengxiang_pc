@@ -10,22 +10,25 @@ const user_store = useUserStore()
 const blog_store = useBlogStore()
 const avatar_boy = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_boy.png'
 const avatar_gril = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_girl.png'
+const account = user_store.get_account()
+const selfBlogURL = ref<string>('')
 
 onBeforeMount(() => {
   get_data()
 })
 
 onMounted(() => {
+  if (account) selfBlogURL.value = `/blog/${account}`
 })
 const reverse = (index: number) => {
   document.querySelectorAll('.blog-list-item')[index].classList.toggle('active')
 }
 const get_data = async () => {
-  const res = await axios.post('/blog/mine', { account: user_store.get_account() })
+  const res = await axios.post('/blog/mine', { account })
   if (res.data.status === 1) {
     blog_lists.value = res.data.message
     if (blog_lists.value.length > 0) {
-      const res2 = await axios.get('/user/info', { params: { account: user_store.get_account() } })
+      const res2 = await axios.get('/user/info', { params: { account } })
       if (res2.data.status === 1) {
         blog_lists.value.forEach(item => {
           item.name = res2.data.message.nickname || res2.data.message.name
@@ -60,6 +63,7 @@ const delete_blog = async (id: number) => {
 <template>
   <div class="container">
     <div class="blog-lists">
+      <div class="blog-self">点击前往 &nbsp; <router-link :to="selfBlogURL">我的</router-link> &nbsp;博客界面</div>
       <div class="blog-list-item" v-for="(item, index) in blog_lists" :key="index">
         <div class="item-front" :style="{ '--hue': `${Math.random() * 360}deg` }">
           <div class="front-info">
@@ -100,7 +104,7 @@ const delete_blog = async (id: number) => {
 .container {
   width: 100%;
   height: 100%;
-  padding: 4vh 2vw;
+  padding: 2vh 1vw;
 }
 
 .blog-lists {
@@ -115,7 +119,7 @@ const delete_blog = async (id: number) => {
   background: linear-gradient(to right, #ff4747, orange, #ff4747);
   background-size: 200% 100%;
   animation: background-move 3s linear infinite;
-  padding: 10px;
+  padding: 0 10px 10px 10px;
   overflow-y: auto;
 }
 
@@ -127,6 +131,19 @@ const delete_blog = async (id: number) => {
   100% {
     background-position: -100%;
   }
+}
+
+.blog-self {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  z-index: 1;
 }
 
 .blog-list-item {
