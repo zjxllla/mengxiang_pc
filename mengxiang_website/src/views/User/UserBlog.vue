@@ -63,7 +63,7 @@ const delete_blog = async (id: number) => {
 <template>
   <div class="container">
     <div class="blog-lists">
-      <div class="blog-self">点击前往 &nbsp; <router-link :to="selfBlogURL">我的</router-link> &nbsp;博客界面</div>
+      <div class="blog-self">点击前往 &nbsp; <a :href="selfBlogURL">我的</a> &nbsp;博客界面</div>
       <div class="blog-list-item" v-for="(item, index) in blog_lists" :key="index">
         <div class="item-front" :style="{ '--hue': `${Math.random() * 360}deg` }">
           <div class="front-info">
@@ -143,6 +143,7 @@ const delete_blog = async (id: number) => {
   background: white;
   border-top: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 10px;
+  margin-top: 10px;
   z-index: 1;
 }
 
