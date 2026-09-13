@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, onBeforeMount, onUnmounted } from 'vue'
 import { useBlogStore, useGlobalStore, useUserStore } from '@/stores'
-import { ElMessage } from 'element-plus'
 import { baseURL } from '../../axios'
 import axios from '../../axios'
 import type { Comment, blog } from '../../Types/article'

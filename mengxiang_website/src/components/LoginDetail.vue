@@ -3,7 +3,6 @@ import { ref } from 'vue';
 import axios from "@/axios"
 import { useUserStore } from "@/stores"
 import { useGlobalStore } from "@/stores"
-import { ElMessage } from 'element-plus'
 
 const userstore = useUserStore()
 const globalStore = useGlobalStore()
