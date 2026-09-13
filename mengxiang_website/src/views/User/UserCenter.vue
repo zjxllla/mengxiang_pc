@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onBeforeMount } from 'vue'
-import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useGlobalStore, useUserStore } from '../../stores'
 import axios from '../../axios'

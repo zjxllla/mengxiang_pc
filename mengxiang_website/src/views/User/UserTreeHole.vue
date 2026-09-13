@@ -3,7 +3,6 @@ import { ref, onMounted, onBeforeMount } from "vue";
 import axios from '../../axios/index'
 import type { article } from '../../Types/article'
 import { useUserStore } from '../../stores/index'
-import { ElMessage } from 'element-plus'
 
 const lists_ref = ref<null | HTMLDivElement>(null);
 const progress_ref = ref<null | HTMLDivElement>(null);

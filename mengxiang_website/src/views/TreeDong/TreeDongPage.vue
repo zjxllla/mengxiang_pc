@@ -5,10 +5,8 @@ import axios from 'axios';
 import { baseURL } from '../../axios';
 import BackBtn from '@/components/BackBtn.vue';
 import { useGlobalStore } from '../../stores'
-import { ElMessageBox } from 'element-plus'
 import TextEdit from '@/components/TextEdit.vue';
 import Myaxios from '../../axios';
-import { ElMessage } from 'element-plus'
 import type { article, like } from '../../Types/article'
 
 const avatar_boy = 'https://darling-1352300125.cos.ap-beijing.myqcloud.com/mengxiang/picture/default_avatar_boy.png'

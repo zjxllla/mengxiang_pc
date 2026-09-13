@@ -2,7 +2,6 @@
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref, onMounted } from 'vue'
 import axios from "@/axios"
-import { ElMessage } from 'element-plus'
 import type { FormInstance } from 'element-plus'
 import { useUserStore } from "@/stores"
 import { useGlobalStore } from "@/stores"

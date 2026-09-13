@@ -3,7 +3,6 @@ import { ref, onMounted, onBeforeMount } from 'vue'
 import type { blog } from '../../Types/article'
 import axios from '../../axios'
 import { useBlogStore, useUserStore } from '../../stores'
-import { ElMessage } from 'element-plus'
 
 const blog_lists = ref<blog[]>([])
 const user_store = useUserStore()

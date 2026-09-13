@@ -3,7 +3,6 @@ import StarBgc from '@/components/StarBgc.vue'
 import { useRoute } from 'vue-router'
 import { ref, onBeforeMount, onBeforeUnmount } from 'vue'
 import Myaxios from '@/axios'
-import { ElMessage } from 'element-plus';
 import type { blog } from '@/Types/article'
 import type { User } from '@/Types/user'
 import { useBlogStore, useUserStore, useGlobalStore } from '../../stores'
@@ -12,7 +11,7 @@ const route = useRoute()
 const account = route.params.id
 const blogList = ref<[string, blog[]][]>([])
 const user = ref<User>()
-const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' })
+const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' }) // 因为使用的构建工具的原因，直接使用./worker.js会无法找到文件，因为构建之后文件路径变化，因此需要通过new URL的方式来获取正确的路径
 const cateList = ref<string[]>([])
 const blogStore = useBlogStore()
 const userStore = useUserStore()

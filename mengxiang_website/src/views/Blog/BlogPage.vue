@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, onBeforeMount, nextTick, onUnmounted } from 'vue'
 import { ArrowRightBold } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
 import TextEdit from '@/components/TextEdit.vue'
 import { useGlobalStore, useBlogStore, useUserStore } from '../../stores'
 import { baseURL } from '../../axios'
